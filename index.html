@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0112)file:///C:/Users/chium/Downloads/%E8%82%A1%E7%A5%A8%E8%B2%B7%E8%B6%85%E8%BF%BD%E8%B9%A4%E7%B3%BB%E7%B5%B1_4.html -->
+<!-- saved from url=(0112)file:///C:/Users/chium/Downloads/%E8%82%A1%E7%A5%A8%E8%B2%B7%E8%B6%85%E8%BF%BD%E8%B9%A4%E7%B3%BB%E7%B5%B1_6.html -->
 <html lang="zh-TW"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -152,8 +152,8 @@ tr:hover td{background:rgba(0,229,160,.03)}
     <div class="header-sub">Top5 Broker Buy-Over Tracker</div>
   </div>
   <div class="sync-status">
-    <div class="sync-dot" id="sync-dot"></div>
-    <span id="sync-text" style="color: var(--text2);">Google Sheets 已連線</span>
+    <div class="sync-dot error" id="sync-dot"></div>
+    <span id="sync-text" style="color: var(--red);">連線失敗</span>
   </div>
 </div>
 
@@ -300,10 +300,10 @@ tr:hover td{background:rgba(0,229,160,.03)}
   <div class="section">
     <div class="section-title">資料庫概況</div>
     <div class="stats-row">
-      <div class="stat-card"><div class="stat-label">紀錄天數</div><div class="stat-val" id="stat-days">2</div></div>
-      <div class="stat-card"><div class="stat-label">標的總數</div><div class="stat-val" id="stat-stocks">21</div></div>
-      <div class="stat-card"><div class="stat-label">觀察中</div><div class="stat-val" id="stat-watching">0</div></div>
-      <div class="stat-card"><div class="stat-label">持倉標的</div><div class="stat-val" id="stat-positions">0</div></div>
+      <div class="stat-card"><div class="stat-label">紀錄天數</div><div class="stat-val" id="stat-days">—</div></div>
+      <div class="stat-card"><div class="stat-label">標的總數</div><div class="stat-val" id="stat-stocks">—</div></div>
+      <div class="stat-card"><div class="stat-label">觀察中</div><div class="stat-val" id="stat-watching">—</div></div>
+      <div class="stat-card"><div class="stat-label">持倉標的</div><div class="stat-val" id="stat-positions">—</div></div>
     </div>
   </div>
 </div>
@@ -327,7 +327,7 @@ tr:hover td{background:rgba(0,229,160,.03)}
 <div id="panel-trades" class="panel">
   <div class="section">
     <div class="section-title">目前持倉</div>
-    <div id="holdings-area"><div class="empty" style="padding:16px"><div class="empty-text" style="font-size:12px">尚無持倉</div></div></div>
+    <div id="holdings-area"><div class="loading">載入中...</div></div>
   </div>
   <div class="section">
     <div class="section-title">新增交易</div>
@@ -358,7 +358,7 @@ tr:hover td{background:rgba(0,229,160,.03)}
   </div>
   <div class="section">
     <div class="section-title">交易紀錄</div>
-    <div class="table-wrap" id="trades-table-wrap"><div class="empty"><div class="empty-icon">💼</div><div class="empty-text">尚無交易紀錄</div></div></div>
+    <div class="table-wrap" id="trades-table-wrap"><div class="loading">載入中...</div></div>
   </div>
 </div>
 
@@ -376,221 +376,11 @@ tr:hover td{background:rgba(0,229,160,.03)}
   </div>
   <div class="section">
     <div class="section-title">買超紀錄</div>
-    <div class="table-wrap" id="history-table-wrap"><table><thead><tr><th>日期</th><th>券商</th><th>代碼</th><th>名稱</th><th>買進張數</th><th>均價</th><th></th></tr></thead><tbody><tr>
-        <td rowspan="1" style="color:var(--text2)">2026-05-07</td>
-        <td><span class="badge badge-gray">大摩</span></td>
-        <td rowspan="1" style="color:var(--accent2)">3481</td><td rowspan="1">群創</td>
-        <td>51,389</td>
-        <td style="color:var(--warn)">30.66</td>
-        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986915708.638)">✕</button></td>
-      </tr><tr>
-        <td rowspan="1" style="color:var(--text2)">2026-05-07</td>
-        <td><span class="badge badge-gray">大摩</span></td>
-        <td rowspan="1" style="color:var(--accent2)">2887</td><td rowspan="1">台新新光金</td>
-        <td>19,567</td>
-        <td style="color:var(--warn)">23.88</td>
-        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986915708.5098)">✕</button></td>
-      </tr><tr>
-        <td rowspan="1" style="color:var(--text2)">2026-05-07</td>
-        <td><span class="badge badge-gray">大摩</span></td>
-        <td rowspan="1" style="color:var(--accent2)">2881</td><td rowspan="1">富邦金</td>
-        <td>8,453</td>
-        <td style="color:var(--warn)">96.34</td>
-        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986915708.6243)">✕</button></td>
-      </tr><tr>
-        <td rowspan="1" style="color:var(--text2)">2026-05-07</td>
-        <td><span class="badge badge-gray">大摩</span></td>
-        <td rowspan="1" style="color:var(--accent2)">2882</td><td rowspan="1">國泰金</td>
-        <td>7,601</td>
-        <td style="color:var(--warn)">80.08</td>
-        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986915708.3237)">✕</button></td>
-      </tr><tr>
-        <td rowspan="1" style="color:var(--text2)">2026-05-07</td>
-        <td><span class="badge badge-gray">大摩</span></td>
-        <td rowspan="1" style="color:var(--accent2)">6282</td><td rowspan="1">康舒</td>
-        <td>6,964</td>
-        <td style="color:var(--warn)">51.53</td>
-        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986915708.4478)">✕</button></td>
-      </tr><tr>
-        <td rowspan="1" style="color:var(--text2)">2026-05-07</td>
-        <td><span class="badge badge-gray">元大</span></td>
-        <td rowspan="1" style="color:var(--accent2)">6770</td><td rowspan="1">力積電</td>
-        <td>132,993</td>
-        <td style="color:var(--warn)">65.33</td>
-        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778987108869.1646)">✕</button></td>
-      </tr><tr>
-        <td rowspan="1" style="color:var(--text2)">2026-05-07</td>
-        <td><span class="badge badge-gray">元大</span></td>
-        <td rowspan="1" style="color:var(--accent2)">00981A</td><td rowspan="1">主動統一台股增長</td>
-        <td>131,228</td>
-        <td style="color:var(--warn)">28.71</td>
-        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778987108869.0867)">✕</button></td>
-      </tr><tr>
-        <td rowspan="1" style="color:var(--text2)">2026-05-07</td>
-        <td><span class="badge badge-gray">元大</span></td>
-        <td rowspan="1" style="color:var(--accent2)">56</td><td rowspan="1">元大高股息</td>
-        <td>30,978</td>
-        <td style="color:var(--warn)">44.90</td>
-        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778987108869.575)">✕</button></td>
-      </tr><tr>
-        <td rowspan="1" style="color:var(--text2)">2026-05-07</td>
-        <td><span class="badge badge-gray">元大</span></td>
-        <td rowspan="1" style="color:var(--accent2)">2344</td><td rowspan="1">華邦電</td>
-        <td>47,153</td>
-        <td style="color:var(--warn)">109.08</td>
-        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778987108869.9253)">✕</button></td>
-      </tr><tr>
-        <td rowspan="1" style="color:var(--text2)">2026-05-07</td>
-        <td><span class="badge badge-gray">元大</span></td>
-        <td rowspan="1" style="color:var(--accent2)">929</td><td rowspan="1">復華台灣科技優息</td>
-        <td>25,792</td>
-        <td style="color:var(--warn)">25.14</td>
-        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778987108869.4172)">✕</button></td>
-      </tr><tr>
-        <td rowspan="1" style="color:var(--text2)">2026-05-03</td>
-        <td><span class="badge badge-gray">大摩</span></td>
-        <td rowspan="1" style="color:var(--accent2)">2881</td><td rowspan="1">富邦金</td>
-        <td>16,413</td>
-        <td style="color:var(--warn)">91.83</td>
-        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986407495.4067)">✕</button></td>
-      </tr><tr>
-        <td rowspan="1" style="color:var(--text2)">2026-05-03</td>
-        <td><span class="badge badge-gray">大摩</span></td>
-        <td rowspan="1" style="color:var(--accent2)">3481</td><td rowspan="1">群創</td>
-        <td>16,539</td>
-        <td style="color:var(--warn)">24.88</td>
-        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986407495.4016)">✕</button></td>
-      </tr><tr>
-        <td rowspan="1" style="color:var(--text2)">2026-05-03</td>
-        <td><span class="badge badge-gray">大摩</span></td>
-        <td rowspan="1" style="color:var(--accent2)">2891</td><td rowspan="1">中信金</td>
-        <td>7,985</td>
-        <td style="color:var(--warn)">53.03</td>
-        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986407495.0933)">✕</button></td>
-      </tr><tr>
-        <td rowspan="1" style="color:var(--text2)">2026-05-03</td>
-        <td><span class="badge badge-gray">大摩</span></td>
-        <td rowspan="1" style="color:var(--accent2)">6770</td><td rowspan="1">力積電</td>
-        <td>9,310</td>
-        <td style="color:var(--warn)">53.00</td>
-        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986407495.778)">✕</button></td>
-      </tr><tr>
-        <td rowspan="1" style="color:var(--text2)">2026-05-03</td>
-        <td><span class="badge badge-gray">大摩</span></td>
-        <td rowspan="1" style="color:var(--accent2)">2887</td><td rowspan="1">台新新光金</td>
-        <td>7,649</td>
-        <td style="color:var(--warn)">23.62</td>
-        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986407495.4421)">✕</button></td>
-      </tr><tr>
-        <td rowspan="1" style="color:var(--text2)">2026-05-03</td>
-        <td><span class="badge badge-gray">元大</span></td>
-        <td rowspan="1" style="color:var(--accent2)">00631L</td><td rowspan="1">元大台灣50正2</td>
-        <td>106,331</td>
-        <td style="color:var(--warn)">29.76</td>
-        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986524162.164)">✕</button></td>
-      </tr><tr>
-        <td rowspan="1" style="color:var(--text2)">2026-05-03</td>
-        <td><span class="badge badge-gray">元大</span></td>
-        <td rowspan="1" style="color:var(--accent2)">00981A</td><td rowspan="1">主動統一台股增長</td>
-        <td>104,942</td>
-        <td style="color:var(--warn)">29.52</td>
-        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986524162.3499)">✕</button></td>
-      </tr><tr>
-        <td rowspan="1" style="color:var(--text2)">2026-05-03</td>
-        <td><span class="badge badge-gray">元大</span></td>
-        <td rowspan="1" style="color:var(--accent2)">00632R</td><td rowspan="1">元大台灣50反1</td>
-        <td>73,779</td>
-        <td style="color:var(--warn)">11.29</td>
-        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986524163.5063)">✕</button></td>
-      </tr><tr>
-        <td rowspan="1" style="color:var(--text2)">2026-05-03</td>
-        <td><span class="badge badge-gray">元大</span></td>
-        <td rowspan="1" style="color:var(--accent2)">2884</td><td rowspan="1">玉山金</td>
-        <td>12,020</td>
-        <td style="color:var(--warn)">31.44</td>
-        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986524163.5696)">✕</button></td>
-      </tr><tr>
-        <td rowspan="1" style="color:var(--text2)">2026-05-03</td>
-        <td><span class="badge badge-gray">元大</span></td>
-        <td rowspan="1" style="color:var(--accent2)">918</td><td rowspan="1">大華優利高填息30</td>
-        <td>14,386</td>
-        <td style="color:var(--warn)">23.56</td>
-        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986524163.3362)">✕</button></td>
-      </tr><tr>
-        <td rowspan="1" style="color:var(--text2)">2026-05-03</td>
-        <td><span class="badge badge-gray">兆豐</span></td>
-        <td rowspan="1" style="color:var(--accent2)">00981A</td><td rowspan="1">主動統一台股增長</td>
-        <td>8,392</td>
-        <td style="color:var(--warn)">29.28</td>
-        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986615343.6099)">✕</button></td>
-      </tr><tr>
-        <td rowspan="1" style="color:var(--text2)">2026-05-03</td>
-        <td><span class="badge badge-gray">兆豐</span></td>
-        <td rowspan="1" style="color:var(--accent2)">00632R</td><td rowspan="1">元大台灣50反1</td>
-        <td>5,207</td>
-        <td style="color:var(--warn)">11.55</td>
-        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986615343.8857)">✕</button></td>
-      </tr><tr>
-        <td rowspan="1" style="color:var(--text2)">2026-05-03</td>
-        <td><span class="badge badge-gray">兆豐</span></td>
-        <td rowspan="1" style="color:var(--accent2)">2303</td><td rowspan="1">聯電</td>
-        <td>11,033</td>
-        <td style="color:var(--warn)">81.41</td>
-        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986615343.9229)">✕</button></td>
-      </tr><tr>
-        <td rowspan="1" style="color:var(--text2)">2026-05-03</td>
-        <td><span class="badge badge-gray">兆豐</span></td>
-        <td rowspan="1" style="color:var(--accent2)">2023</td><td rowspan="1">燁輝</td>
-        <td>1,343</td>
-        <td style="color:var(--warn)">13.90</td>
-        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986615343.3057)">✕</button></td>
-      </tr><tr>
-        <td rowspan="1" style="color:var(--text2)">2026-05-03</td>
-        <td><span class="badge badge-gray">兆豐</span></td>
-        <td rowspan="1" style="color:var(--accent2)">2002</td><td rowspan="1">中鋼</td>
-        <td>1,748</td>
-        <td style="color:var(--warn)">18.66</td>
-        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986615343.6191)">✕</button></td>
-      </tr><tr>
-        <td rowspan="1" style="color:var(--text2)">2026-05-03</td>
-        <td><span class="badge badge-gray">凱基</span></td>
-        <td rowspan="1" style="color:var(--accent2)">56</td><td rowspan="1">元大高股息</td>
-        <td>46,997</td>
-        <td style="color:var(--warn)">41.84</td>
-        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986788970.0007)">✕</button></td>
-      </tr><tr>
-        <td rowspan="1" style="color:var(--text2)">2026-05-03</td>
-        <td><span class="badge badge-gray">凱基</span></td>
-        <td rowspan="1" style="color:var(--accent2)">919</td><td rowspan="1">群益台灣精選高息</td>
-        <td>48,121</td>
-        <td style="color:var(--warn)">24.02</td>
-        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986788970.7085)">✕</button></td>
-      </tr><tr>
-        <td rowspan="1" style="color:var(--text2)">2026-05-03</td>
-        <td><span class="badge badge-gray">凱基</span></td>
-        <td rowspan="1" style="color:var(--accent2)">929</td><td rowspan="1">復華台灣科技優息</td>
-        <td>37,197</td>
-        <td style="color:var(--warn)">23.00</td>
-        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986788970.3918)">✕</button></td>
-      </tr><tr>
-        <td rowspan="1" style="color:var(--text2)">2026-05-03</td>
-        <td><span class="badge badge-gray">凱基</span></td>
-        <td rowspan="1" style="color:var(--accent2)">9816</td><td rowspan="1">凱基台灣TOP50</td>
-        <td>34,870</td>
-        <td style="color:var(--warn)">13.54</td>
-        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986788970.1807)">✕</button></td>
-      </tr><tr>
-        <td rowspan="1" style="color:var(--text2)">2026-05-03</td>
-        <td><span class="badge badge-gray">凱基</span></td>
-        <td rowspan="1" style="color:var(--accent2)">712</td><td rowspan="1">復華富時不動產</td>
-        <td>22,277</td>
-        <td style="color:var(--warn)">9.17</td>
-        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986788970.5935)">✕</button></td>
-      </tr></tbody></table></div>
+    <div class="table-wrap" id="history-table-wrap"><div class="empty"><div class="empty-icon">📋</div><div class="empty-text">請點擊查詢</div></div></div>
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="toast err" id="toast">⚠ 無法連線到 Google Sheets</div>
 <div class="confirm-overlay" id="confirm-overlay">
   <div class="confirm-box">
     <div class="confirm-title">確認刪除</div>
@@ -611,15 +401,33 @@ async function apiPost(action,payload){ const r=await fetch(API,{method:'POST',b
 // ── 日期工具：確保永遠是 YYYY-MM-DD 純字串 ───────────
 function safeDate(val) {
   if (!val) return '';
-  const s = String(val);
-  // 已經是正確格式
+  const s = String(val).trim();
+
+  // 已經是 YYYY-MM-DD，直接回傳
   if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
-  // ISO 字串（含時區）：取前10碼但先轉台灣時間
-  if (s.includes('T') || s.includes('Z')) {
-    // 加8小時補回台灣時區
-    const d = new Date(new Date(s).getTime() + 8 * 60 * 60 * 1000);
+
+  // M/D 或 MM/DD（Google Sheets 有時回傳這格式）
+  if (/^\d{1,2}\/\d{1,2}(\/\d{2,4})?$/.test(s)) {
+    const parts = s.split('/');
+    const year = parts[2] ? (parts[2].length === 2 ? '20' + parts[2] : parts[2]) : new Date().getFullYear();
+    const m = String(parts[0]).padStart(2, '0');
+    const d = String(parts[1]).padStart(2, '0');
+    return `${year}-${m}-${d}`;
+  }
+
+  // ISO 字串或含時區資訊：不用 Date 解析，直接取前10碼
+  // 因為 Date() 會套用本地時區造成偏移，改用純字串截取
+  if (s.length >= 10 && s[4] === '-') {
+    return s.slice(0, 10);
+  }
+
+  // 數字型日期（Excel serial number，Apps Script 有時這樣回傳）
+  if (/^\d{5}$/.test(s)) {
+    // Excel epoch: 1899-12-30
+    const d = new Date(Date.UTC(1899, 11, 30) + parseInt(s) * 86400000);
     return d.toISOString().slice(0, 10);
   }
+
   return s.slice(0, 10);
 }
 
