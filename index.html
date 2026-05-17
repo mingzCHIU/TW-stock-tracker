@@ -1,0 +1,1419 @@
+<!DOCTYPE html>
+<!-- saved from url=(0112)file:///C:/Users/chium/Downloads/%E8%82%A1%E7%A5%A8%E8%B2%B7%E8%B6%85%E8%BF%BD%E8%B9%A4%E7%B3%BB%E7%B5%B1_4.html -->
+<html lang="zh-TW"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>券商買超追蹤系統</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+:root {
+  --bg:#0a0e14;--bg2:#111820;--bg3:#1a2430;--border:#1e3048;
+  --accent:#00e5a0;--accent2:#0099ff;--warn:#ffcc00;
+  --text:#c8d8e8;--text2:#7a9ab5;--text3:#3a5a75;
+  --green:#00e5a0;--red:#ff4455;--radius:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans TC',sans-serif;font-size:14px;min-height:100vh;padding:16px}
+.header{display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.header-title{font-size:18px;font-weight:700;color:var(--accent);letter-spacing:.05em}
+.header-sub{font-size:11px;color:var(--text2);font-family:'IBM Plex Mono',monospace}
+.sync-status{margin-left:auto;font-size:11px;font-family:'IBM Plex Mono',monospace;display:flex;align-items:center;gap:6px}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite;flex-shrink:0}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(0,229,160,.4)}50%{opacity:.7;box-shadow:0 0 0 5px rgba(0,229,160,0)}}
+.sync-dot.syncing{background:var(--warn);animation:none}
+.sync-dot.error{background:var(--red);animation:none}
+.tabs{display:flex;gap:3px;margin-bottom:20px;background:var(--bg2);border-radius:var(--radius);padding:4px}
+.tab{flex:1;padding:8px 4px;text-align:center;cursor:pointer;border-radius:6px;font-size:12px;font-weight:500;color:var(--text2);transition:all .2s;border:none;background:transparent;font-family:'Noto Sans TC',sans-serif}
+.tab.active{background:var(--bg3);color:var(--accent);border:1px solid var(--border)}
+.tab:hover:not(.active){color:var(--text)}
+.panel{display:none}.panel.active{display:block}
+.section{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:16px}
+.section-title{font-size:10px;font-weight:700;color:var(--accent);letter-spacing:.15em;text-transform:uppercase;margin-bottom:14px;font-family:'IBM Plex Mono',monospace}
+.form-row{display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.form-group{display:flex;flex-direction:column;gap:5px;flex:1;min-width:90px}
+.form-group label{font-size:11px;color:var(--text2);font-weight:500}
+.form-group input,.form-group select{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:6px;font-size:13px;font-family:'IBM Plex Mono',monospace;outline:none;transition:border-color .2s;width:100%}
+.form-group input:focus,.form-group select:focus{border-color:var(--accent)}
+.form-group input::placeholder{color:var(--text3)}
+.form-group input.auto-filled{border-color:rgba(0,229,160,.4);background:rgba(0,229,160,.05)}
+.form-group input.unknown{border-color:rgba(255,204,0,.4)}
+
+/* Stock row */
+.stock-row-wrap{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:10px 12px;margin-bottom:8px;position:relative}
+.stock-row-label{font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-bottom:8px;letter-spacing:.08em}
+.stock-row{display:grid;grid-template-columns:100px 1fr 110px 110px;gap:8px;align-items:end}
+@media(max-width:500px){.stock-row{grid-template-columns:80px 1fr;}.stock-row .price-group,.stock-row .qty-group{min-width:0}}
+.code-hint{font-size:10px;color:var(--text3);margin-top:3px;height:14px;font-family:'IBM Plex Mono',monospace}
+.code-hint.found{color:var(--accent)}
+.code-hint.unknown{color:var(--warn)}
+/* Broker combo badge */
+.broker-combo{background:var(--bg3);border-radius:6px;padding:10px 12px;margin-top:10px;border:1px solid var(--border)}
+.broker-combo-title{font-size:10px;color:var(--text2);font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;font-family:'IBM Plex Mono',monospace}
+.broker-tag{display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:600;font-family:'IBM Plex Mono',monospace;margin:2px 3px 2px 0}
+.broker-tag.morgan{background:rgba(0,153,255,.15);color:#4db8ff}
+.broker-tag.yuanta{background:rgba(255,204,0,.15);color:var(--warn)}
+.broker-tag.mega{background:rgba(0,229,160,.15);color:var(--green)}
+.broker-tag.kgi{background:rgba(255,107,53,.15);color:#ff8c69}
+.broker-tag.other{background:rgba(122,154,181,.15);color:var(--text2)}
+.combo-signal{font-size:12px;margin-top:6px;line-height:1.6;color:var(--text)}
+.combo-signal .sig-icon{margin-right:4px}
+
+/* Broker header */
+.broker-header{display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.broker-select-wrap{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.broker-select-wrap label{font-size:12px;color:var(--text2);white-space:nowrap}
+.broker-select-wrap select{background:var(--bg3);border:1px solid var(--border);color:var(--accent2);padding:7px 12px;border-radius:6px;font-size:14px;font-weight:600;font-family:'IBM Plex Mono',monospace;outline:none;cursor:pointer}
+.broker-select-wrap select:focus{border-color:var(--accent2)}
+
+.btn{padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s;font-family:'Noto Sans TC',sans-serif}
+.btn-primary{background:var(--accent);color:var(--bg)}.btn-primary:hover{background:#00ffb3}
+.btn-primary:disabled{background:var(--text3);cursor:not-allowed}
+.btn-secondary{background:transparent;color:var(--accent2);border:1px solid var(--accent2)}.btn-secondary:hover{background:rgba(0,153,255,.1)}
+.btn-danger{background:transparent;color:var(--red);border:1px solid transparent;padding:3px 8px;font-size:12px}.btn-danger:hover{border-color:var(--red);background:rgba(255,68,85,.1)}
+.form-actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;align-items:center}
+.notice{font-size:11px;color:var(--text2);background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 12px;margin-bottom:14px;line-height:1.6}
+
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{font-size:11px;color:var(--text2);font-weight:600;padding:8px 10px;text-align:left;border-bottom:1px solid var(--border);font-family:'IBM Plex Mono',monospace;white-space:nowrap}
+td{padding:8px 10px;border-bottom:1px solid rgba(30,48,72,.5);font-size:12px;font-family:'IBM Plex Mono',monospace;vertical-align:middle}
+tr:hover td{background:rgba(0,229,160,.03)}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;font-family:'IBM Plex Mono',monospace}
+.badge-green{background:rgba(0,229,160,.15);color:var(--green)}
+.badge-red{background:rgba(255,68,85,.15);color:var(--red)}
+.badge-blue{background:rgba(0,153,255,.15);color:var(--accent2)}
+.badge-gray{background:rgba(122,154,181,.15);color:var(--text2)}
+.badge-yellow{background:rgba(255,204,0,.15);color:var(--warn)}
+
+.watchlist-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px;margin-bottom:16px}
+.watch-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;position:relative;overflow:hidden}
+.watch-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px}
+.watch-card.safe::before{background:var(--green)}.watch-card.safe{border-color:rgba(0,229,160,.25)}
+.watch-card.warn::before{background:var(--warn)}.watch-card.warn{border-color:rgba(255,204,0,.25)}
+.watch-card.over::before{background:var(--red)}.watch-card.over{border-color:rgba(255,68,85,.25)}
+.watch-card.neutral::before{background:var(--text3)}
+.wc-code{font-size:11px;color:var(--text2);font-family:'IBM Plex Mono',monospace}
+.wc-name{font-size:15px;font-weight:700;color:var(--text);margin:2px 0 10px}
+.wc-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.wc-label{font-size:11px;color:var(--text2)}
+.wc-val{font-size:12px;font-family:'IBM Plex Mono',monospace;font-weight:500}
+.wc-divider{border:none;border-top:1px solid var(--border);margin:10px 0}
+.wc-diff-bar{height:3px;background:var(--bg3);border-radius:2px;margin:8px 0;overflow:hidden}
+.wc-diff-fill{height:100%;border-radius:2px;transition:width .4s}
+.wc-pct{font-size:20px;font-weight:700;font-family:'IBM Plex Mono',monospace}
+.price-inline-input{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:4px 8px;border-radius:5px;font-size:12px;font-family:'IBM Plex Mono',monospace;width:110px;outline:none;text-align:right}
+.price-inline-input:focus{border-color:var(--accent)}
+.cust-section{background:var(--bg3);border-radius:6px;padding:10px;margin-top:10px}
+.cust-title{font-size:10px;color:var(--text2);font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;font-family:'IBM Plex Mono',monospace}
+.cust-weeks{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px}
+.cust-group{display:flex;flex-direction:column;gap:3px}
+.cust-group label{font-size:9px;color:var(--text3);font-family:'IBM Plex Mono',monospace}
+.cust-group input{background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:4px 6px;border-radius:5px;font-size:11px;font-family:'IBM Plex Mono',monospace;outline:none;width:100%;text-align:center}
+.cust-group input:focus{border-color:var(--accent2)}
+.cust-result-row{display:flex;align-items:center;justify-content:space-between}
+.cust-trend{font-size:11px;font-family:'IBM Plex Mono',monospace;font-weight:600;line-height:1.5}
+.cust-sparkline{display:flex;align-items:flex-end;gap:2px;height:20px}
+.cust-bar{width:10px;border-radius:2px 2px 0 0}
+
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:16px}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:12px}
+.stat-label{font-size:10px;color:var(--text2);font-weight:600;letter-spacing:.1em;text-transform:uppercase}
+.stat-val{font-size:22px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--accent);margin-top:4px}
+
+.holdings-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:4px}
+.holding-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:12px}
+.hc-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.hc-name{font-size:13px;font-weight:700}
+.hc-row{display:flex;justify-content:space-between;font-size:11px;font-family:'IBM Plex Mono',monospace;margin-bottom:4px;color:var(--text2)}
+.hc-row span:last-child{color:var(--text)}
+
+.empty{text-align:center;padding:40px 20px;color:var(--text2)}
+.empty-icon{font-size:32px;margin-bottom:10px}
+.empty-text{font-size:13px;line-height:1.8}
+.loading{text-align:center;padding:30px;color:var(--text2);font-family:'IBM Plex Mono',monospace;font-size:12px}
+
+.toast{position:fixed;bottom:20px;right:20px;z-index:999;background:var(--bg3);border:1px solid var(--accent);color:var(--accent);padding:10px 16px;border-radius:8px;font-size:13px;font-family:'IBM Plex Mono',monospace;transform:translateY(80px);opacity:0;transition:all .3s;max-width:280px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.err{border-color:var(--red);color:var(--red)}
+.confirm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;align-items:center;justify-content:center}
+.confirm-overlay.show{display:flex}
+.confirm-box{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:24px;max-width:320px;width:90%}
+.confirm-title{font-size:15px;font-weight:700;margin-bottom:8px}
+.confirm-text{font-size:13px;color:var(--text2);margin-bottom:18px}
+.confirm-actions{display:flex;gap:10px}
+.yf-sep{font-size:11px;color:var(--text3);background:var(--bg3);border-radius:5px;padding:6px 10px;margin-bottom:8px;font-family:'IBM Plex Mono',monospace}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-title">券商買超追蹤系統</div>
+    <div class="header-sub">Top5 Broker Buy-Over Tracker</div>
+  </div>
+  <div class="sync-status">
+    <div class="sync-dot" id="sync-dot"></div>
+    <span id="sync-text" style="color: var(--text2);">Google Sheets 已連線</span>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab(&#39;input&#39;,this)">📥 資料輸入</button>
+  <button class="tab" onclick="switchTab(&#39;watchlist&#39;,this)">👁 觀察名單</button>
+  <button class="tab" onclick="switchTab(&#39;trades&#39;,this)">💼 交易紀錄</button>
+  <button class="tab" onclick="switchTab(&#39;history&#39;,this)">📋 歷史資料庫</button>
+</div>
+
+<!-- INPUT -->
+<div id="panel-input" class="panel active">
+  <div class="section">
+    <div class="section-title">新增每日買超紀錄</div>
+    <div class="notice">選好日期和券商，依序輸入前五名買超股票的代碼（名稱自動帶入）、張數、均價。可少於五筆。</div>
+
+    <!-- Date + Broker -->
+    <div class="form-row" style="align-items:flex-end;margin-bottom:16px">
+      <div class="form-group" style="flex:0 0 145px">
+        <label>日期</label>
+        <input type="date" id="inp-date">
+      </div>
+      <div class="form-group" style="flex:0 0 auto">
+        <label>券商</label>
+        <select id="inp-broker" style="color:var(--accent2);font-weight:600;min-width:100px" onchange="showBrokerHint(this.value)">
+          <option>大摩</option><option>元大</option><option>兆豐</option>
+          <option>凱基</option><option>富邦</option><option>國泰</option>
+          <option>統一</option><option>群益</option><option>永豐</option>
+          <option>日盛</option><option>其他</option>
+        </select>
+      </div>
+      <div id="broker-hint-box" style="flex: 1 1 0%; min-width: 200px; background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; font-size: 11px; line-height: 1.6; color: var(--text2); display: block;"><span style="color:#4db8ff;font-weight:700">🌍 外資｜全球視野</span><br>外資法人，追蹤全球產業趨勢。進場代表中長線看好，非短線操作，跟進需有耐心等待趨勢兌現。<br><span style="color:#4db8ff;font-size:10px;font-family:&#39;IBM Plex Mono&#39;,monospace">→ 行情非短線，勿急求表現</span></div>
+    </div>
+
+    <!-- 5 stock rows -->
+    <div id="stock-rows"><div class="stock-row-wrap">
+      <div class="stock-row-label">第 1 名買超</div>
+      <div class="stock-row">
+        <div class="form-group">
+          <label>股票代碼</label>
+          <input type="text" id="s1-code" placeholder="如 2881" maxlength="10" oninput="onCodeInput(1, this.value)">
+        </div>
+        <div class="form-group">
+          <label>股票名稱</label>
+          <input type="text" id="s1-name" placeholder="代碼或名稱擇一輸入" oninput="onNameInput(1, this.value)">
+        </div>
+        <div class="form-group qty-group">
+          <label>買進張數</label>
+          <input type="number" id="s1-qty" placeholder="如 16413" min="0">
+        </div>
+        <div class="form-group price-group">
+          <label>買進均價</label>
+          <input type="number" id="s1-price" placeholder="如 91.83" step="0.01" min="0">
+        </div>
+      </div>
+      <div class="code-hint" id="s1-hint" style="margin-top:4px"></div></div><div class="stock-row-wrap">
+      <div class="stock-row-label">第 2 名買超</div>
+      <div class="stock-row">
+        <div class="form-group">
+          <label>股票代碼</label>
+          <input type="text" id="s2-code" placeholder="如 2881" maxlength="10" oninput="onCodeInput(2, this.value)">
+        </div>
+        <div class="form-group">
+          <label>股票名稱</label>
+          <input type="text" id="s2-name" placeholder="代碼或名稱擇一輸入" oninput="onNameInput(2, this.value)">
+        </div>
+        <div class="form-group qty-group">
+          <label>買進張數</label>
+          <input type="number" id="s2-qty" placeholder="如 16413" min="0">
+        </div>
+        <div class="form-group price-group">
+          <label>買進均價</label>
+          <input type="number" id="s2-price" placeholder="如 91.83" step="0.01" min="0">
+        </div>
+      </div>
+      <div class="code-hint" id="s2-hint" style="margin-top:4px"></div></div><div class="stock-row-wrap">
+      <div class="stock-row-label">第 3 名買超</div>
+      <div class="stock-row">
+        <div class="form-group">
+          <label>股票代碼</label>
+          <input type="text" id="s3-code" placeholder="如 2881" maxlength="10" oninput="onCodeInput(3, this.value)">
+        </div>
+        <div class="form-group">
+          <label>股票名稱</label>
+          <input type="text" id="s3-name" placeholder="代碼或名稱擇一輸入" oninput="onNameInput(3, this.value)">
+        </div>
+        <div class="form-group qty-group">
+          <label>買進張數</label>
+          <input type="number" id="s3-qty" placeholder="如 16413" min="0">
+        </div>
+        <div class="form-group price-group">
+          <label>買進均價</label>
+          <input type="number" id="s3-price" placeholder="如 91.83" step="0.01" min="0">
+        </div>
+      </div>
+      <div class="code-hint" id="s3-hint" style="margin-top:4px"></div></div><div class="stock-row-wrap">
+      <div class="stock-row-label">第 4 名買超</div>
+      <div class="stock-row">
+        <div class="form-group">
+          <label>股票代碼</label>
+          <input type="text" id="s4-code" placeholder="如 2881" maxlength="10" oninput="onCodeInput(4, this.value)">
+        </div>
+        <div class="form-group">
+          <label>股票名稱</label>
+          <input type="text" id="s4-name" placeholder="代碼或名稱擇一輸入" oninput="onNameInput(4, this.value)">
+        </div>
+        <div class="form-group qty-group">
+          <label>買進張數</label>
+          <input type="number" id="s4-qty" placeholder="如 16413" min="0">
+        </div>
+        <div class="form-group price-group">
+          <label>買進均價</label>
+          <input type="number" id="s4-price" placeholder="如 91.83" step="0.01" min="0">
+        </div>
+      </div>
+      <div class="code-hint" id="s4-hint" style="margin-top:4px"></div></div><div class="stock-row-wrap">
+      <div class="stock-row-label">第 5 名買超</div>
+      <div class="stock-row">
+        <div class="form-group">
+          <label>股票代碼</label>
+          <input type="text" id="s5-code" placeholder="如 2881" maxlength="10" oninput="onCodeInput(5, this.value)">
+        </div>
+        <div class="form-group">
+          <label>股票名稱</label>
+          <input type="text" id="s5-name" placeholder="代碼或名稱擇一輸入" oninput="onNameInput(5, this.value)">
+        </div>
+        <div class="form-group qty-group">
+          <label>買進張數</label>
+          <input type="number" id="s5-qty" placeholder="如 16413" min="0">
+        </div>
+        <div class="form-group price-group">
+          <label>買進均價</label>
+          <input type="number" id="s5-price" placeholder="如 91.83" step="0.01" min="0">
+        </div>
+      </div>
+      <div class="code-hint" id="s5-hint" style="margin-top:4px"></div></div></div>
+
+    <div class="form-actions">
+      <button class="btn btn-primary" id="save-btn" onclick="saveEntry()">✓ 儲存</button>
+      <button class="btn btn-secondary" onclick="clearStockRows()">清除</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">資料庫概況</div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-label">紀錄天數</div><div class="stat-val" id="stat-days">2</div></div>
+      <div class="stat-card"><div class="stat-label">標的總數</div><div class="stat-val" id="stat-stocks">21</div></div>
+      <div class="stat-card"><div class="stat-label">觀察中</div><div class="stat-val" id="stat-watching">0</div></div>
+      <div class="stat-card"><div class="stat-label">持倉標的</div><div class="stat-val" id="stat-positions">0</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- WATCHLIST -->
+<div id="panel-watchlist" class="panel">
+  <div class="section">
+    <div class="section-title">篩選條件</div>
+    <div class="form-row" style="align-items:flex-end">
+      <div class="form-group" style="flex:0 0 165px"><label>最少連續天數（中斷即剔除）</label><input type="number" id="filter-days" value="3" min="1" max="30"></div>
+      <div class="form-group" style="flex:0 0 170px"><label>現價超過均價上限 (%)</label><input type="number" id="filter-pct" value="5" min="0" max="50" step="0.5"></div>
+      <div><button class="btn btn-primary" onclick="buildWatchlist()">篩選</button></div>
+    </div>
+  </div>
+  <div id="watchlist-area">
+    <div class="empty"><div class="empty-icon">🔍</div><div class="empty-text">點擊「篩選」載入觀察名單</div></div>
+  </div>
+</div>
+
+<!-- TRADES -->
+<div id="panel-trades" class="panel">
+  <div class="section">
+    <div class="section-title">目前持倉</div>
+    <div id="holdings-area"><div class="empty" style="padding:16px"><div class="empty-text" style="font-size:12px">尚無持倉</div></div></div>
+  </div>
+  <div class="section">
+    <div class="section-title">新增交易</div>
+    <div class="notice">股數為零股（股）。買進/賣出可同一筆填，也可分開記錄。</div>
+    <div class="form-row">
+      <div class="form-group" style="flex:0 0 145px"><label>日期</label><input type="date" id="tr-date"></div>
+      <div class="form-group" style="flex:0 0 100px">
+        <label>股票代碼</label>
+        <input type="text" id="tr-code" placeholder="2887" oninput="lookupTradeCode(this.value)">
+      </div>
+      <div class="form-group" style="flex:2"><label>股票名稱</label><input type="text" id="tr-name" placeholder="自動帶入或手動輸入"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>買進價（元）</label><input type="number" id="tr-buy" placeholder="23.80" step="0.01"></div>
+      <div class="form-group"><label>買進股數</label><input type="number" id="tr-buy-shares" placeholder="200" min="0"></div>
+      <div class="form-group"><label>賣出價（元）</label><input type="number" id="tr-sell" placeholder="—" step="0.01"></div>
+      <div class="form-group"><label>賣出股數</label><input type="number" id="tr-sell-shares" placeholder="—" min="0"></div>
+    </div>
+    <div class="yf-sep">永豐 App 對照（選填）</div>
+    <div class="form-row">
+      <div class="form-group"><label>永豐：平均成本（元）</label><input type="number" id="tr-yf-cost" placeholder="選填" step="0.001"></div>
+      <div class="form-group"><label>永豐：損益比例（%）</label><input type="number" id="tr-yf-pnl" placeholder="如 3.5" step="0.01"></div>
+      <div class="form-group"><label>備註</label><input type="text" id="tr-note" placeholder="選填"></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" id="trade-btn" onclick="saveTrade()">✓ 儲存交易</button>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-title">交易紀錄</div>
+    <div class="table-wrap" id="trades-table-wrap"><div class="empty"><div class="empty-icon">💼</div><div class="empty-text">尚無交易紀錄</div></div></div>
+  </div>
+</div>
+
+<!-- HISTORY -->
+<div id="panel-history" class="panel">
+  <div class="section">
+    <div class="section-title">查詢篩選</div>
+    <div class="form-row" style="align-items:flex-end">
+      <div class="form-group"><label>股票代碼（空白=全部）</label><input type="text" id="hist-code" placeholder="如 3481"></div>
+      <div class="form-group"><label>券商（空白=全部）</label><input type="text" id="hist-broker" placeholder="如 大摩"></div>
+      <div class="form-group"><label>日期起</label><input type="date" id="hist-from"></div>
+      <div class="form-group"><label>日期迄</label><input type="date" id="hist-to"></div>
+      <div><button class="btn btn-primary" onclick="renderHistory()">查詢</button></div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-title">買超紀錄</div>
+    <div class="table-wrap" id="history-table-wrap"><table><thead><tr><th>日期</th><th>券商</th><th>代碼</th><th>名稱</th><th>買進張數</th><th>均價</th><th></th></tr></thead><tbody><tr>
+        <td rowspan="1" style="color:var(--text2)">2026-05-07</td>
+        <td><span class="badge badge-gray">大摩</span></td>
+        <td rowspan="1" style="color:var(--accent2)">3481</td><td rowspan="1">群創</td>
+        <td>51,389</td>
+        <td style="color:var(--warn)">30.66</td>
+        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986915708.638)">✕</button></td>
+      </tr><tr>
+        <td rowspan="1" style="color:var(--text2)">2026-05-07</td>
+        <td><span class="badge badge-gray">大摩</span></td>
+        <td rowspan="1" style="color:var(--accent2)">2887</td><td rowspan="1">台新新光金</td>
+        <td>19,567</td>
+        <td style="color:var(--warn)">23.88</td>
+        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986915708.5098)">✕</button></td>
+      </tr><tr>
+        <td rowspan="1" style="color:var(--text2)">2026-05-07</td>
+        <td><span class="badge badge-gray">大摩</span></td>
+        <td rowspan="1" style="color:var(--accent2)">2881</td><td rowspan="1">富邦金</td>
+        <td>8,453</td>
+        <td style="color:var(--warn)">96.34</td>
+        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986915708.6243)">✕</button></td>
+      </tr><tr>
+        <td rowspan="1" style="color:var(--text2)">2026-05-07</td>
+        <td><span class="badge badge-gray">大摩</span></td>
+        <td rowspan="1" style="color:var(--accent2)">2882</td><td rowspan="1">國泰金</td>
+        <td>7,601</td>
+        <td style="color:var(--warn)">80.08</td>
+        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986915708.3237)">✕</button></td>
+      </tr><tr>
+        <td rowspan="1" style="color:var(--text2)">2026-05-07</td>
+        <td><span class="badge badge-gray">大摩</span></td>
+        <td rowspan="1" style="color:var(--accent2)">6282</td><td rowspan="1">康舒</td>
+        <td>6,964</td>
+        <td style="color:var(--warn)">51.53</td>
+        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986915708.4478)">✕</button></td>
+      </tr><tr>
+        <td rowspan="1" style="color:var(--text2)">2026-05-07</td>
+        <td><span class="badge badge-gray">元大</span></td>
+        <td rowspan="1" style="color:var(--accent2)">6770</td><td rowspan="1">力積電</td>
+        <td>132,993</td>
+        <td style="color:var(--warn)">65.33</td>
+        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778987108869.1646)">✕</button></td>
+      </tr><tr>
+        <td rowspan="1" style="color:var(--text2)">2026-05-07</td>
+        <td><span class="badge badge-gray">元大</span></td>
+        <td rowspan="1" style="color:var(--accent2)">00981A</td><td rowspan="1">主動統一台股增長</td>
+        <td>131,228</td>
+        <td style="color:var(--warn)">28.71</td>
+        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778987108869.0867)">✕</button></td>
+      </tr><tr>
+        <td rowspan="1" style="color:var(--text2)">2026-05-07</td>
+        <td><span class="badge badge-gray">元大</span></td>
+        <td rowspan="1" style="color:var(--accent2)">56</td><td rowspan="1">元大高股息</td>
+        <td>30,978</td>
+        <td style="color:var(--warn)">44.90</td>
+        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778987108869.575)">✕</button></td>
+      </tr><tr>
+        <td rowspan="1" style="color:var(--text2)">2026-05-07</td>
+        <td><span class="badge badge-gray">元大</span></td>
+        <td rowspan="1" style="color:var(--accent2)">2344</td><td rowspan="1">華邦電</td>
+        <td>47,153</td>
+        <td style="color:var(--warn)">109.08</td>
+        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778987108869.9253)">✕</button></td>
+      </tr><tr>
+        <td rowspan="1" style="color:var(--text2)">2026-05-07</td>
+        <td><span class="badge badge-gray">元大</span></td>
+        <td rowspan="1" style="color:var(--accent2)">929</td><td rowspan="1">復華台灣科技優息</td>
+        <td>25,792</td>
+        <td style="color:var(--warn)">25.14</td>
+        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778987108869.4172)">✕</button></td>
+      </tr><tr>
+        <td rowspan="1" style="color:var(--text2)">2026-05-03</td>
+        <td><span class="badge badge-gray">大摩</span></td>
+        <td rowspan="1" style="color:var(--accent2)">2881</td><td rowspan="1">富邦金</td>
+        <td>16,413</td>
+        <td style="color:var(--warn)">91.83</td>
+        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986407495.4067)">✕</button></td>
+      </tr><tr>
+        <td rowspan="1" style="color:var(--text2)">2026-05-03</td>
+        <td><span class="badge badge-gray">大摩</span></td>
+        <td rowspan="1" style="color:var(--accent2)">3481</td><td rowspan="1">群創</td>
+        <td>16,539</td>
+        <td style="color:var(--warn)">24.88</td>
+        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986407495.4016)">✕</button></td>
+      </tr><tr>
+        <td rowspan="1" style="color:var(--text2)">2026-05-03</td>
+        <td><span class="badge badge-gray">大摩</span></td>
+        <td rowspan="1" style="color:var(--accent2)">2891</td><td rowspan="1">中信金</td>
+        <td>7,985</td>
+        <td style="color:var(--warn)">53.03</td>
+        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986407495.0933)">✕</button></td>
+      </tr><tr>
+        <td rowspan="1" style="color:var(--text2)">2026-05-03</td>
+        <td><span class="badge badge-gray">大摩</span></td>
+        <td rowspan="1" style="color:var(--accent2)">6770</td><td rowspan="1">力積電</td>
+        <td>9,310</td>
+        <td style="color:var(--warn)">53.00</td>
+        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986407495.778)">✕</button></td>
+      </tr><tr>
+        <td rowspan="1" style="color:var(--text2)">2026-05-03</td>
+        <td><span class="badge badge-gray">大摩</span></td>
+        <td rowspan="1" style="color:var(--accent2)">2887</td><td rowspan="1">台新新光金</td>
+        <td>7,649</td>
+        <td style="color:var(--warn)">23.62</td>
+        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986407495.4421)">✕</button></td>
+      </tr><tr>
+        <td rowspan="1" style="color:var(--text2)">2026-05-03</td>
+        <td><span class="badge badge-gray">元大</span></td>
+        <td rowspan="1" style="color:var(--accent2)">00631L</td><td rowspan="1">元大台灣50正2</td>
+        <td>106,331</td>
+        <td style="color:var(--warn)">29.76</td>
+        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986524162.164)">✕</button></td>
+      </tr><tr>
+        <td rowspan="1" style="color:var(--text2)">2026-05-03</td>
+        <td><span class="badge badge-gray">元大</span></td>
+        <td rowspan="1" style="color:var(--accent2)">00981A</td><td rowspan="1">主動統一台股增長</td>
+        <td>104,942</td>
+        <td style="color:var(--warn)">29.52</td>
+        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986524162.3499)">✕</button></td>
+      </tr><tr>
+        <td rowspan="1" style="color:var(--text2)">2026-05-03</td>
+        <td><span class="badge badge-gray">元大</span></td>
+        <td rowspan="1" style="color:var(--accent2)">00632R</td><td rowspan="1">元大台灣50反1</td>
+        <td>73,779</td>
+        <td style="color:var(--warn)">11.29</td>
+        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986524163.5063)">✕</button></td>
+      </tr><tr>
+        <td rowspan="1" style="color:var(--text2)">2026-05-03</td>
+        <td><span class="badge badge-gray">元大</span></td>
+        <td rowspan="1" style="color:var(--accent2)">2884</td><td rowspan="1">玉山金</td>
+        <td>12,020</td>
+        <td style="color:var(--warn)">31.44</td>
+        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986524163.5696)">✕</button></td>
+      </tr><tr>
+        <td rowspan="1" style="color:var(--text2)">2026-05-03</td>
+        <td><span class="badge badge-gray">元大</span></td>
+        <td rowspan="1" style="color:var(--accent2)">918</td><td rowspan="1">大華優利高填息30</td>
+        <td>14,386</td>
+        <td style="color:var(--warn)">23.56</td>
+        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986524163.3362)">✕</button></td>
+      </tr><tr>
+        <td rowspan="1" style="color:var(--text2)">2026-05-03</td>
+        <td><span class="badge badge-gray">兆豐</span></td>
+        <td rowspan="1" style="color:var(--accent2)">00981A</td><td rowspan="1">主動統一台股增長</td>
+        <td>8,392</td>
+        <td style="color:var(--warn)">29.28</td>
+        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986615343.6099)">✕</button></td>
+      </tr><tr>
+        <td rowspan="1" style="color:var(--text2)">2026-05-03</td>
+        <td><span class="badge badge-gray">兆豐</span></td>
+        <td rowspan="1" style="color:var(--accent2)">00632R</td><td rowspan="1">元大台灣50反1</td>
+        <td>5,207</td>
+        <td style="color:var(--warn)">11.55</td>
+        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986615343.8857)">✕</button></td>
+      </tr><tr>
+        <td rowspan="1" style="color:var(--text2)">2026-05-03</td>
+        <td><span class="badge badge-gray">兆豐</span></td>
+        <td rowspan="1" style="color:var(--accent2)">2303</td><td rowspan="1">聯電</td>
+        <td>11,033</td>
+        <td style="color:var(--warn)">81.41</td>
+        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986615343.9229)">✕</button></td>
+      </tr><tr>
+        <td rowspan="1" style="color:var(--text2)">2026-05-03</td>
+        <td><span class="badge badge-gray">兆豐</span></td>
+        <td rowspan="1" style="color:var(--accent2)">2023</td><td rowspan="1">燁輝</td>
+        <td>1,343</td>
+        <td style="color:var(--warn)">13.90</td>
+        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986615343.3057)">✕</button></td>
+      </tr><tr>
+        <td rowspan="1" style="color:var(--text2)">2026-05-03</td>
+        <td><span class="badge badge-gray">兆豐</span></td>
+        <td rowspan="1" style="color:var(--accent2)">2002</td><td rowspan="1">中鋼</td>
+        <td>1,748</td>
+        <td style="color:var(--warn)">18.66</td>
+        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986615343.6191)">✕</button></td>
+      </tr><tr>
+        <td rowspan="1" style="color:var(--text2)">2026-05-03</td>
+        <td><span class="badge badge-gray">凱基</span></td>
+        <td rowspan="1" style="color:var(--accent2)">56</td><td rowspan="1">元大高股息</td>
+        <td>46,997</td>
+        <td style="color:var(--warn)">41.84</td>
+        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986788970.0007)">✕</button></td>
+      </tr><tr>
+        <td rowspan="1" style="color:var(--text2)">2026-05-03</td>
+        <td><span class="badge badge-gray">凱基</span></td>
+        <td rowspan="1" style="color:var(--accent2)">919</td><td rowspan="1">群益台灣精選高息</td>
+        <td>48,121</td>
+        <td style="color:var(--warn)">24.02</td>
+        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986788970.7085)">✕</button></td>
+      </tr><tr>
+        <td rowspan="1" style="color:var(--text2)">2026-05-03</td>
+        <td><span class="badge badge-gray">凱基</span></td>
+        <td rowspan="1" style="color:var(--accent2)">929</td><td rowspan="1">復華台灣科技優息</td>
+        <td>37,197</td>
+        <td style="color:var(--warn)">23.00</td>
+        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986788970.3918)">✕</button></td>
+      </tr><tr>
+        <td rowspan="1" style="color:var(--text2)">2026-05-03</td>
+        <td><span class="badge badge-gray">凱基</span></td>
+        <td rowspan="1" style="color:var(--accent2)">9816</td><td rowspan="1">凱基台灣TOP50</td>
+        <td>34,870</td>
+        <td style="color:var(--warn)">13.54</td>
+        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986788970.1807)">✕</button></td>
+      </tr><tr>
+        <td rowspan="1" style="color:var(--text2)">2026-05-03</td>
+        <td><span class="badge badge-gray">凱基</span></td>
+        <td rowspan="1" style="color:var(--accent2)">712</td><td rowspan="1">復華富時不動產</td>
+        <td>22,277</td>
+        <td style="color:var(--warn)">9.17</td>
+        <td rowspan="1"><button class="btn btn-danger" onclick="deleteEntry(1778986788970.5935)">✕</button></td>
+      </tr></tbody></table></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <div class="confirm-title">確認刪除</div>
+    <div class="confirm-text" id="confirm-text">確定要刪除這筆紀錄嗎？</div>
+    <div class="confirm-actions">
+      <button class="btn btn-danger" id="confirm-yes">刪除</button>
+      <button class="btn btn-secondary" onclick="closeConfirm()">取消</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── API ───────────────────────────────────────────────
+const API = 'https://script.google.com/macros/s/AKfycbz-02fu_sd0JMuA286R0R-2IUE832lOl0_AAkdfz1ALWwwxR2LtvGVxktMmn8f2c8Rtvw/exec';
+async function apiGet(action){ const r=await fetch(`${API}?action=${action}`); return r.json(); }
+async function apiPost(action,payload){ const r=await fetch(API,{method:'POST',body:JSON.stringify({action,payload})}); return r.json(); }
+
+// ── 日期工具：確保永遠是 YYYY-MM-DD 純字串 ───────────
+function safeDate(val) {
+  if (!val) return '';
+  const s = String(val);
+  // 已經是正確格式
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  // ISO 字串（含時區）：取前10碼但先轉台灣時間
+  if (s.includes('T') || s.includes('Z')) {
+    // 加8小時補回台灣時區
+    const d = new Date(new Date(s).getTime() + 8 * 60 * 60 * 1000);
+    return d.toISOString().slice(0, 10);
+  }
+  return s.slice(0, 10);
+}
+
+// ── Taiwan stock lookup table ─────────────────────────
+const STOCKS = {
+  // 金融
+  '2881':'富邦金','2882':'國泰金','2883':'開發金','2884':'玉山金','2885':'元大金',
+  '2886':'兆豐金','2887':'台新金','2888':'新光金','2889':'國票金','2890':'永豐金',
+  '2891':'中信金','2892':'第一金','5880':'合庫金','2801':'彰銀','2812':'台中銀',
+  '2815':'台中銀','5876':'上海商銀','2833':'台壽保','2823':'中壽',
+  // 半導體
+  '2330':'台積電','2303':'聯電','2308':'台達電','2317':'鴻海','2327':'國巨',
+  '2344':'華邦電','2347':'聯強','2356':'英業達','2360':'致茂','2379':'瑞昱',
+  '2385':'群光','2388':'威盛','2395':'研華','2401':'凌陽','2404':'漢唐',
+  '2408':'南亞科','2409':'友達','2412':'中華電','2451':'創見','2454':'聯發科',
+  '2458':'義隆','2474':'可成','2492':'華新科','2498':'宏達電','2520':'冠德',
+  '3008':'大立光','3034':'聯詠','3037':'欣興','3041':'揚智','3045':'台灣大',
+  '3231':'緯創','3481':'群創','3533':'嘉澤','3702':'大聯大','4904':'遠傳',
+  '4938':'和碩','5347':'世界先進','6176':'瑞儀','6239':'力成','6271':'同欣電',
+  '6285':'啟碁','6415':'矽力-KY','6505':'台塑化','6669':'緯穎','8046':'南電',
+  // 電子/科技
+  '2301':'光寶科','2302':'麗正','2312':'金寶','2313':'華通','2316':'楠梓電',
+  '2321':'東訊','2323':'中環','2324':'仁寶','2325':'矽品','2328':'廣宇',
+  '2329':'華泰','2331':'精英','2332':'友訊','2337':'旺宏','2338':'光罩',
+  '2340':'光磊','2342':'茂矽','2345':'智邦','2348':'海悅','2352':'佳世達',
+  '2353':'宏碁','2354':'鴻準','2355':'敬鵬','2357':'華碩','2358':'廷鑫',
+  '2359':'所羅門','2362':'藍天','2363':'矽統','2364':'倫飛','2365':'昆盈',
+  '2367':'燿華','2368':'金像電','2369':'菱生','2370':'建達','2371':'大同',
+  '2376':'技嘉','2377':'微星','2382':'廣達','2383':'台光電','2384':'勝華',
+  '2387':'精元','2392':'正崴','2393':'億光','2397':'友通','2399':'映泰',
+  '2402':'毅嘉','2406':'國碩','2407':'全友','2413':'環科','2414':'精技',
+  '2415':'毅嘉','2419':'仲琦','2420':'新巨','2421':'建準','2422':'象王',
+  '2423':'固緯','2424':'隴華','2425':'承啟','2426':'鼎元','2427':'三商電',
+  '2428':'興勤','2429':'銘異','2430':'燦坤','2433':'互億','2434':'統懋',
+  '2436':'偉詮電','2438':'翔耀','2439':'美律','2440':'太空梭','2441':'超豐',
+  '2442':'新美齊','2443':'史雷克','2444':'兆勁','2448':'晶電','2449':'京元電',
+  '2450':'神腦','2453':'凌群','2455':'全新','2456':'奇力新','2457':'飛宏',
+  '2459':'敦吉','2460':'建通','2461':'光群雷','2462':'得利影視','2463':'互動',
+  '2464':'盟立','2465':'麗臺','2466':'冠西電','2467':'志聖','2468':'華研',
+  '2471':'資通','2472':'立隆電','2473':'思源科','2475':'華映','2476':'鉅祥',
+  '2478':'大毅','2480':'敦陽科','2481':'強茂','2482':'連宇','2483':'百容',
+  '2484':'希華','2485':'兆赫','2486':'一詮','2487':'晟銘電','2488':'漢平',
+  '2489':'瑞軒','2490':'燦星網','2491':'吳羽','2493':'揚博','2495':'普安',
+  '2496':'卓越','2497':'怡利電','2499':'東貝','2501':'國建','2504':'國產',
+  // ETF
+  '0050':'元大台灣50','0051':'元大中型100','0052':'富邦科技','0053':'元大電子',
+  '0054':'元大台商50','0055':'元大MSCI金融','0056':'元大高股息','0057':'富邦摩台',
+  '0058':'富邦發達','0059':'富邦金融','0060':'元大新台灣','0061':'元大寶滬深',
+  '006201':'元大富櫃50','006203':'元大MSCI台灣','006204':'永豐臺灣加權',
+  '006208':'富邦台50','00631L':'元大台灣50正2','00632R':'元大台灣50反1',
+  '00633L':'富邦台灣加權正2','00634R':'富邦台灣加權反1','00636':'國泰臺灣加權',
+  '00642U':'元大S&P石油','00643':'群益奈米','00645':'富邦東証','00646':'元大S&P500',
+  '00647L':'元大S&P500正2','00648R':'元大S&P500反1','00650L':'富邦NASDAQ正2',
+  '00652':'富邦印度','00655L':'國泰臺灣加權正2','00657':'國泰日經225',
+  '00660':'元大歐洲50','00661':'元大日本正2','00662':'富邦NASDAQ',
+  '00663L':'國泰臺灣加權正2','00664R':'國泰臺灣加權反1','00665L':'富邦恒生正2',
+  '00668':'國泰美國道瓊','00669R':'富邦恒生反1','00670L':'富邦恒生正2',
+  '00672L':'元大恒生正2','00673R':'元大恒生反2','00675L':'富邦美國正2',
+  '00676L':'富邦滬深正2','00677U':'富邦VIX','00678':'群益NBI生技',
+  '00680L':'元大美債20正2','00681B':'元大美債7-10','00682B':'元大美債1-3',
+  '00683L':'富邦臺灣加權正2','00684R':'富邦臺灣加權反1','00685L':'群益臺灣加權正2',
+  '00686R':'群益臺灣加權反1','00687B':'國泰20年美債','00688L':'國泰臺灣加權正2',
+  '00689':'凱基台灣Alpha高息','00690':'兆豐台灣藍籌30','00692':'富邦公司債',
+  '00694B':'永豐10年期以上高評級美元公司債','00695B':'復華彭博美國20年期以上公司債',
+  '00696B':'富邦彭博高收益債','00697B':'群益15年IG美元公司債',
+  '00700':'富邦印度季季配','00701':'國泰股利精選30','00702':'國泰標普低波動指數',
+  '00703':'台新MSCI中國','00704':'台新2X','00706L':'元大S&P能源正2',
+  '00707':'元大MSCI全球','00708L':'元大MSCI全球正2','00710B':'復華彭博20年期以上BBB美元公司債',
+  '00711B':'兆豐15年IG美元公司債','00712':'復華富時不動產','00713':'元大台灣高息低波',
+  '00714':'群益道瓊高收益企業債','00715L':'富邦美國短期高收益債正2',
+  '00716':'復華新興市場高收益債','00717':'富邦全球高收益債',
+  '00720B':'元大投資級公司債','00722B':'群益投資級金融債',
+  '00723B':'國泰5年IG投資級債','00724B':'群益投資級公司債',
+  '00725B':'國泰投資級公司債','00726B':'台新美元公司債',
+  '00728':'第一金工業30','00730':'富邦臺灣優質高息','00731':'復華富時高息低波',
+  '00733':'富邦臺灣中小','00739':'台新標普500','00751B':'元大AAA至A公司債',
+  '00752B':'ChinaAMC彭博中國企業債','00753B':'元大15年IG美元公司債',
+  '00757':'統一FANG+','00762':'永豐美國500大','00763':'國泰新興市場',
+  '00770':'華南永昌臺灣',  '00771':'元大全球5G','00773B':'中信優先金融債',
+  '00774B':'中信高評級公司債','00775B':'新光投資級公司債',
+  '00776B':'凱基IG精選15+','00777':'永豐優息存股','00778B':'凱基AAA至A公司債',
+  '00779B':'凱基15年IG美元公司債','00780':'大華優利高填息',
+  '00783':'台灣工業金融30','00784':'富邦道瓊台灣',  '00785':'凱基優選高股息30',
+  '00786':'凱基台灣ESG永續','00787':'統一台灣動能',
+  '00850':'元大臺灣ESG永續','00851L':'元大臺灣ESG永續正2',
+  '00878':'國泰永續高股息','00881':'國泰台灣5G+','00882':'中信中國高股息',
+  '00883':'國泰台灣ESG','00885':'富邦越南','00886':'國泰全球品牌50',
+  '00887':'永豐台灣ESG','00888':'永豐台灣MSCI','00891':'中信關鍵半導體',
+  '00892':'富邦台灣半導體','00893':'國泰智能電動車','00894':'中信小台灣精選',
+  '00895':'富邦未來車','00896':'中信綠能及電動車','00898':'台新北美科技',
+  '00900':'富邦特選高股息30','00901':'永豐智能車供應鏈','00903':'復華亞太科技',
+  '00904':'新光MSCI氣候變遷','00905':'野村MSCI台灣','00906':'永豐台灣ESG',
+  '00907':'永豐台灣ESG','00908':'富邦入息ETF','00909':'網路家庭',
+  '00910':'第一金太空衛星','00912':'中信台灣智慧50','00914':'中信價值成長',
+  '00915':'凱基優選5G通訊','00916':'國泰永續高股息','00917':'中信特選台灣中小',
+  '00918':'大華優利高填息30','00919':'群益台灣精選高息','00920':'富邦台灣核心治理',
+  '00921':'兆豐台灣晶圓製造','00922':'國泰台灣ESG永續高息',
+  '00923':'群益台ESG低碳50','00924':'永豐ESG低碳高息',
+  '00925':'富邦台灣成長','00926':'凱基台灣ESG永續高息30',
+  '00927':'群益半導體收益','00928':'中信成長高股息',
+  '00929':'復華台灣科技優息','00930':'永豐台灣龍頭等權重',
+  '00931':'統一台灣高息動能','00932':'兆豐永續高息等權',
+  '00933B':'國泰10Y+金融債','00934B':'中信10年IG電信債',
+  '00935B':'野村15年以上IG科技','00936':'台新臺灣中小特選',
+  '00937B':'群益ESG投等債20+','00938':'永豐台灣電動車及車用晶片',
+  '00939':'統一台灣高息動能','00940':'元大臺灣價值高息',
+  '00941':'台新台灣5G通訊基金','00942B':'第一金非投資等級債',
+  '00943B':'群益A級公司債','00944B':'台新亞洲非投等債',
+  '00945B':'國泰2年期IG投資級企業債','00946B':'永豐1~3年以上投資級企業債',
+  '00947B':'元大彭博20年期BBB美元公司債','00948B':'中信優息投資級債',
+  '00949':'大華優利高填息30','00950':'台新台灣製造之星',
+  '00951':'凱基高息行動支付30','00952':'富邦台灣優質成長',
+  '00953B':'群益優選非投等債','00954B':'兆豐A級公司債',
+  '00955B':'復華彭博非投資等級債','00956':'台新永續高息中小',
+  '00957':'永豐金融科技供應鏈','00958':'凱基台灣晶片優選30',
+  '00959':'統一台灣科技ESG','00960':'凱基ESG投等債20+',
+  '00961':'中信電池及儲能','00962':'元大台灣高息成長',
+  '00963':'中信低碳50','00964':'富邦5G通訊',
+  '00965':'國泰AI人工智慧','00966':'永豐台灣ESG永續低碳',
+  '00967':'大華優利收息',
+  // 主動型ETF
+  '00981A':'主動統一台股增長','00982A':'主動群益台灣強棒',
+  '00983A':'主動台新台灣智慧','00984A':'主動新光台灣精選',
+  '00985A':'主動凱基台灣價值','00986A':'主動元大台灣中小',
+  '00987A':'主動兆豐台灣核心','00988A':'主動統一全球創新',
+  '00989A':'主動復華未來趨勢','00990A':'主動凱基台灣ESG',
+  '00991A':'主動復華未來50','00992A':'主動群益科技創新',
+  '00993A':'主動統一台灣大未來','00994A':'主動野村台灣高科技',
+  '00995A':'主動兆豐台灣核心精選','00996A':'主動中信人工智慧',
+  '00997A':'主動國泰台灣精選','00998A':'主動富邦台灣科技',
+  '00999A':'主動野村臺灣高息',
+  '00403A':'主動統一升級50',
+  '009816':'凱基台灣TOP50','009820':'元大納斯達克精選',
+  // 鋼鐵/傳產
+  '2002':'中鋼','2006':'東鋼','2007':'燁興','2010':'春源',
+  '2012':'春雨','2013':'中鋼構','2014':'中鴻','2015':'豐興',
+  '2017':'官田鋼','2018':'錦鋒','2019':'桂宏','2023':'燁輝',
+  '2024':'志聯','2025':'千興','2026':'潤泰全','2027':'大成鋼',
+  '2028':'威致','2029':'盛餘','2030':'彰源','2031':'新光鋼',
+  '2032':'新鋼','2033':'佳大','2034':'允強','2038':'海光',
+  '2039':'台金','2049':'上銀','2101':'南港輪胎','2103':'台橡',
+  '2104':'中橡','2105':'正新','2106':'建大','2107':'厚生',
+  // 化工/塑化
+  '1301':'台塑','1303':'南亞','1304':'台聚','1305':'華夏',
+  '1306':'奇美實業','1307':'三芳化學','1308':'亞聚','1309':'台達化',
+  '1310':'台苯','1312':'國喬','1313':'聯成','1314':'中石化',
+  '1315':'達新','1316':'上曜','1317':'貿聯','1319':'東陽',
+  '1321':'大洋','1323':'永裕','1324':'地球','1325':'恆大',
+  '1326':'台化','1327':'永光','1328':'科化','1329':'永基',
+  // 建築/資產
+  '2501':'國建','2502':'宏福','2503':'昌益','2504':'國產',
+  '2505':'國揚','2506':'太設','2509':'全坤建','2511':'太子',
+  '2515':'中工','2516':'新建','2517':'長谷','2520':'冠德',
+  '2521':'宏盛','2522':'宏璟','2524':'京城','2525':'寶成',
+  '2527':'宏璟','2528':'皇普','2530':'華建','2534':'宏盛',
+  '2535':'達欣工','2536':'宏普','2537':'聯上發','2538':'基泰',
+  '2539':'櫻花建設','2540':'愛山林','2542':'興富發',
+  // 食品/消費
+  '1201':'味全','1203':'味王','1204':'台榮','1210':'大成',
+  '1213':'大飲','1215':'卜蜂','1216':'統一','1217':'愛之味',
+  '1218':'泰山','1219':'福壽','1220':'台榮','1225':'福懋油',
+  '1227':'佳格','1229':'聯華食','1230':'聯華','1231':'聯華食',
+  '1232':'大統益','1233':'天仁','1234':'黑松','1235':'興泰',
+  '1236':'宏亞','1256':'鮮活果汁-KY','1259':'安心食品',
+  // 運輸
+  '2601':'益航','2603':'長榮','2604':'中航','2605':'新興',
+  '2606':'裕民','2607':'榮運','2608':'天時造船','2609':'陽明',
+  '2610':'華航','2611':'志信','2612':'中航','2614':'東森',
+  '2615':'萬海','2616':'山隆','2617':'台航','2618':'長榮航',
+  '2619':'中裕','2622':'台灣港務','2623':'台灣港務',
+  '2727':'王品','2729':'瓦城','2730':'歐素亞',
+  // 電信
+  '2412':'中華電','3045':'台灣大','4904':'遠傳','4977':'天鈺',
+  '3374':'精材','4958':'臻鼎-KY','5234':'達興材料',
+  // 其他常見
+  '1102':'亞泥','1108':'幸福水泥','1109':'信大水泥','1110':'東泥',
+  '2382':'廣達','2383':'台光電','6770':'力積電','8069':'元太',
+  '3008':'大立光','2395':'研華','2376':'技嘉','2377':'微星',
+  '6116':'彩晶','2409':'友達','2344':'華邦電','6282':'康舒',
+};
+
+function lookupCode(code) {
+  if (!code) return '';
+  return STOCKS[code.trim().toUpperCase()] || STOCKS[code.trim()] || '';
+}
+
+// 反向查詢：名稱 → 代碼（支援部分比對）
+function lookupName(name) {
+  if (!name) return '';
+  const q = name.trim();
+  // 完整比對優先
+  for (const [code, n] of Object.entries(STOCKS)) {
+    if (n === q) return code;
+  }
+  // 部分比對（名稱包含搜尋字）
+  const partials = Object.entries(STOCKS).filter(([, n]) => n.includes(q));
+  if (partials.length === 1) return partials[0][0]; // 唯一符合就帶入
+  return ''; // 多個符合不自動帶入，避免帶錯
+}
+
+// ── Broker knowledge base ────────────────────────────
+const BROKER_INFO = {
+  '大摩': {
+    tag: 'morgan',
+    label: '外資｜全球視野',
+    icon: '🌍',
+    color: '#4db8ff',
+    desc: '外資法人，追蹤全球產業趨勢。進場代表中長線看好，非短線操作，跟進需有耐心等待趨勢兌現。',
+    tip: '行情非短線，勿急求表現'
+  },
+  '元大': {
+    tag: 'yuanta',
+    label: '內資大老｜市場共識',
+    icon: '🏦',
+    color: '#ffcc00',
+    desc: '國內最大券商，代表市場共識。需注意「散戶跟進、大戶出貨」風險，買超量大時反而要謹慎是否為出貨訊號。',
+    tip: '留意散戶跟進後大戶反手風險'
+  },
+  '兆豐': {
+    tag: 'mega',
+    label: '官股券商｜政府指標',
+    icon: '🏛️',
+    color: '#00e5a0',
+    desc: '官股背景，反映政府護盤意圖。通常在恐慌低點逢低承接，底部訊號意義強，適合搭配做中長線分批佈局參考。',
+    tip: '底部訊號，長線分批佈局參考'
+  },
+  '凱基': {
+    tag: 'kgi',
+    label: '短線當沖王｜反轉風險',
+    icon: '⚡',
+    color: '#ff8c69',
+    desc: '台灣最強短線與當沖券商，換手快速。若僅有凱基買超而無其他券商跟進，小心可能只是短線拉抬，反轉風險高。',
+    tip: '單獨出現需警惕短線反轉風險'
+  }
+};
+
+// Broker combo analysis
+function analyzeBrokerCombo(brokerNames) {
+  const set = new Set(brokerNames);
+  const has = b => set.has(b);
+  const signals = [];
+
+  if (has('大摩') && has('兆豐')) {
+    signals.push({ strength: 'strong', icon: '💪', text: '外資＋官股共同進場，中長線信心度高，底部支撐強。' });
+  }
+  if (has('大摩') && has('元大')) {
+    signals.push({ strength: 'moderate', icon: '👀', text: '外資＋內資共識，趨勢確認中，但需留意元大後續是否轉為出貨。' });
+  }
+  if (has('兆豐') && has('元大') && !has('大摩')) {
+    signals.push({ strength: 'moderate', icon: '🏛️', text: '官股護盤＋內資跟進，底部氛圍明顯，適合分批佈局。' });
+  }
+  if (has('大摩') && has('兆豐') && has('元大')) {
+    signals.push({ strength: 'strong', icon: '🔥', text: '三方共同買超！外資、官股、內資齊聚，訊號強烈，關注度高。' });
+  }
+  if (has('凱基') && !has('大摩') && !has('兆豐')) {
+    signals.push({ strength: 'weak', icon: '⚠️', text: '僅有短線券商進場，無外資或官股背書，留意短線拉抬後的反轉風險。' });
+  }
+  if (has('凱基') && has('大摩')) {
+    signals.push({ strength: 'moderate', icon: '⚡', text: '短線熱度加上外資支撐，短期可能有爆發力，但凱基換手快，留意高點。' });
+  }
+  if (has('大摩') && !has('元大') && !has('兆豐') && !has('凱基')) {
+    signals.push({ strength: 'moderate', icon: '🌍', text: '純外資買超，全球產業邏輯驅動，中長線等待，短線未必有感。' });
+  }
+  if (signals.length === 0 && brokerNames.length > 0) {
+    signals.push({ strength: 'info', icon: 'ℹ️', text: '非主力四大券商，可作為輔助參考，建議觀察後續是否有主力跟進。' });
+  }
+  return signals;
+}
+
+function showBrokerHint(broker) {
+  const box = document.getElementById('broker-hint-box');
+  const info = BROKER_INFO[broker];
+  if (!info) { box.style.display='none'; return; }
+  box.style.display = 'block';
+  box.innerHTML = `<span style="color:${info.color};font-weight:700">${info.icon} ${info.label}</span><br>${info.desc}<br><span style="color:${info.color};font-size:10px;font-family:'IBM Plex Mono',monospace">→ ${info.tip}</span>`;
+}
+
+function brokerTagHTML(broker) {
+  const info = BROKER_INFO[broker];
+  const cls = info ? info.tag : 'other';
+  const color = info ? info.color : 'var(--text2)';
+  return `<span class="broker-tag ${cls}" style="border:1px solid ${color}30">${broker}</span>`;
+}
+
+// ── Init ──────────────────────────────────────────────
+let cache = { db: null, trades: null, custodian: null, prices: null };
+const today = () => new Date().toISOString().split('T')[0];
+document.getElementById('inp-date').value = today();
+document.getElementById('tr-date').value = today();
+buildStockRows();
+showBrokerHint(document.getElementById('inp-broker').value);
+loadAll();
+
+async function loadAll() {
+  setSyncStatus('syncing', '同步中...');
+  try {
+    const [db, trades, cust, prices] = await Promise.all([
+      apiGet('getBuyover'), apiGet('getTrades'),
+      apiGet('getCustodian'), apiGet('getPrices')
+    ]);
+    cache.db = (Array.isArray(db) ? db : []).map(e => ({ ...e, date: safeDate(e.date) }));
+    cache.trades = (Array.isArray(trades) ? trades : []).map(t => ({ ...t, date: safeDate(t.date) }));
+    cache.custodian = {};
+    (Array.isArray(cust)?cust:[]).forEach(r => cache.custodian[r.code] = {w1:r.w1||'',w2:r.w2||'',w3:r.w3||'',w4:r.w4||''});
+    cache.prices = {};
+    (Array.isArray(prices)?prices:[]).forEach(r => cache.prices[r.code] = r.price);
+    setSyncStatus('ok', 'Google Sheets 已連線');
+    updateStats(); renderHoldings(); renderTrades();
+  } catch(e) {
+    setSyncStatus('error', '連線失敗');
+    showToast('⚠ 無法連線到 Google Sheets', true);
+  }
+}
+
+function setSyncStatus(state, text) {
+  const dot = document.getElementById('sync-dot');
+  const txt = document.getElementById('sync-text');
+  dot.className = 'sync-dot' + (state!=='ok' ? ' '+state : '');
+  txt.textContent = text;
+  txt.style.color = state==='error' ? 'var(--red)' : state==='syncing' ? 'var(--warn)' : 'var(--text2)';
+}
+
+function switchTab(tab, el) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('panel-'+tab).classList.add('active');
+  if (tab==='history') renderHistory();
+  if (tab==='trades') { renderTrades(); renderHoldings(); }
+  if (tab==='watchlist') buildWatchlist();
+}
+
+// ── Stock input rows ──────────────────────────────────
+function buildStockRows() {
+  const container = document.getElementById('stock-rows');
+  container.innerHTML = '';
+  for (let i = 1; i <= 5; i++) {
+    const div = document.createElement('div');
+    div.className = 'stock-row-wrap';
+    div.innerHTML = `
+      <div class="stock-row-label">第 ${i} 名買超</div>
+      <div class="stock-row">
+        <div class="form-group">
+          <label>股票代碼</label>
+          <input type="text" id="s${i}-code" placeholder="如 2881" maxlength="10"
+            oninput="onCodeInput(${i}, this.value)">
+        </div>
+        <div class="form-group">
+          <label>股票名稱</label>
+          <input type="text" id="s${i}-name" placeholder="代碼或名稱擇一輸入"
+            oninput="onNameInput(${i}, this.value)">
+        </div>
+        <div class="form-group qty-group">
+          <label>買進張數</label>
+          <input type="number" id="s${i}-qty" placeholder="如 16413" min="0">
+        </div>
+        <div class="form-group price-group">
+          <label>買進均價</label>
+          <input type="number" id="s${i}-price" placeholder="如 91.83" step="0.01" min="0">
+        </div>
+      </div>
+      <div class="code-hint" id="s${i}-hint" style="margin-top:4px"></div>`;
+    container.appendChild(div);
+  }
+}
+
+// 輸入代碼 → 自動帶出名稱
+function onCodeInput(i, val) {
+  const codeEl = document.getElementById(`s${i}-code`);
+  const nameEl = document.getElementById(`s${i}-name`);
+  const hintEl = document.getElementById(`s${i}-hint`);
+  const code = val.trim();
+  if (!code) {
+    hintEl.textContent=''; hintEl.className='code-hint';
+    nameEl.classList.remove('auto-filled','unknown'); return;
+  }
+  const name = lookupCode(code);
+  if (name) {
+    nameEl.value = name;
+    nameEl.classList.add('auto-filled'); nameEl.classList.remove('unknown');
+    codeEl.classList.add('auto-filled'); codeEl.classList.remove('unknown');
+    hintEl.textContent = '✓ ' + code + '　' + name;
+    hintEl.className = 'code-hint found';
+  } else {
+    nameEl.value = '';
+    nameEl.classList.remove('auto-filled'); nameEl.classList.add('unknown');
+    codeEl.classList.remove('auto-filled');
+    hintEl.textContent = '未找到，請手動輸入名稱';
+    hintEl.className = 'code-hint unknown';
+  }
+}
+
+// 輸入名稱 → 自動帶出代碼
+function onNameInput(i, val) {
+  const codeEl = document.getElementById(`s${i}-code`);
+  const nameEl = document.getElementById(`s${i}-name`);
+  const hintEl = document.getElementById(`s${i}-hint`);
+  const name = val.trim();
+  if (!name) {
+    hintEl.textContent=''; hintEl.className='code-hint';
+    codeEl.classList.remove('auto-filled','unknown'); return;
+  }
+  // Only auto-fill code if code field is empty (avoid overwriting manual input)
+  if (codeEl.value.trim()) return;
+  const code = lookupName(name);
+  if (code) {
+    codeEl.value = code;
+    codeEl.classList.add('auto-filled'); codeEl.classList.remove('unknown');
+    nameEl.classList.add('auto-filled'); nameEl.classList.remove('unknown');
+    hintEl.textContent = '✓ ' + code + '　' + STOCKS[code];
+    hintEl.className = 'code-hint found';
+  } else {
+    codeEl.classList.remove('auto-filled');
+    // Check if partial match exists to give hint
+    const q = name;
+    const partials = Object.entries(STOCKS).filter(([,n]) => n.includes(q));
+    if (partials.length > 1 && partials.length <= 5) {
+      hintEl.textContent = '多筆符合：' + partials.map(([c,n])=>`${n}(${c})`).join('、');
+      hintEl.className = 'code-hint unknown';
+    } else if (partials.length > 5) {
+      hintEl.textContent = '繼續輸入以縮小範圍...';
+      hintEl.className = 'code-hint';
+    } else {
+      hintEl.textContent = '';
+      hintEl.className = 'code-hint';
+    }
+  }
+}
+
+function clearStockRows() {
+  for (let i=1; i<=5; i++) {
+    ['code','name','qty','price'].forEach(f => { const el=document.getElementById(`s${i}-${f}`); if(el)el.value=''; });
+    ['code','name'].forEach(f => {
+      const el=document.getElementById(`s${i}-${f}`);
+      if(el) el.classList.remove('auto-filled','unknown');
+    });
+    const hintEl=document.getElementById(`s${i}-hint`);
+    if(hintEl){hintEl.textContent='';hintEl.className='code-hint';}
+  }
+}
+
+// ── Save entry ────────────────────────────────────────
+async function saveEntry() {
+  const date = document.getElementById('inp-date').value;
+  const broker = document.getElementById('inp-broker').value;
+  if (!date) { showToast('⚠ 請選擇日期', true); return; }
+
+  // Collect filled stocks
+  const stocks = [];
+  for (let i=1; i<=5; i++) {
+    const code = document.getElementById(`s${i}-code`).value.trim();
+    const name = document.getElementById(`s${i}-name`).value.trim();
+    const qty  = parseFloat(document.getElementById(`s${i}-qty`).value);
+    const price= parseFloat(document.getElementById(`s${i}-price`).value);
+    if (!code && !name) continue;
+    if (!code || !name) { showToast(`⚠ 第${i}筆：代碼和名稱都需填寫`, true); return; }
+    if (!qty || !price) { showToast(`⚠ 第${i}筆（${name}）：張數和均價都需填寫`, true); return; }
+    stocks.push({ code, name, qty, price });
+  }
+  if (!stocks.length) { showToast('⚠ 請至少填寫一筆股票', true); return; }
+
+  const btn = document.getElementById('save-btn');
+  btn.disabled=true; btn.textContent='儲存中...';
+  setSyncStatus('syncing', '儲存中...');
+
+  try {
+    // Each stock becomes one entry (code+name), broker is stored in brokers array
+    const entries = stocks.map(s => ({
+      id: Date.now() + Math.random(),
+      date, code: s.code, name: s.name,
+      brokers: [{ broker, qty: s.qty, price: s.price }]
+    }));
+    for (const entry of entries) {
+      await apiPost('addBuyover', entry);
+      cache.db.push(entry);
+    }
+    showToast(`✓ 已儲存 ${stocks.length} 筆（${broker}・${date}）`);
+    clearStockRows(); updateStats();
+    setSyncStatus('ok', 'Google Sheets 已連線');
+  } catch(e) {
+    showToast('⚠ 儲存失敗，請重試', true);
+    setSyncStatus('error', '儲存失敗');
+  }
+  btn.disabled=false; btn.textContent='✓ 儲存';
+}
+
+// ── Stats ─────────────────────────────────────────────
+function updateStats() {
+  if (!cache.db) return;
+  document.getElementById('stat-days').textContent = new Set(cache.db.map(e=>e.date)).size;
+  document.getElementById('stat-stocks').textContent = new Set(cache.db.map(e=>e.code)).size;
+  document.getElementById('stat-watching').textContent = computeWatchlist(cache.db, 3).length;
+  const h = computeHoldings(cache.trades||[]);
+  document.getElementById('stat-positions').textContent = Object.values(h).filter(p=>p.shares>0).length;
+}
+
+// ── Watchlist ─────────────────────────────────────────
+function computeWatchlist(db, minDays) {
+  const byCode={};
+  db.forEach(e=>{
+    if(!byCode[e.code])byCode[e.code]={name:e.name,entries:[]};
+    byCode[e.code].entries.push(e);
+  });
+  const allDates=[...new Set(db.map(e=>e.date))].sort();
+  const results=[];
+  for(const [code,{name,entries}] of Object.entries(byCode)){
+    const codeDates=new Set(entries.map(e=>e.date));
+    const myDates=allDates.filter(d=>codeDates.has(d));
+    if(!myDates.length)continue;
+    const myIdxs=myDates.map(d=>allDates.indexOf(d));
+    let end=myIdxs.length-1,start=end;
+    for(let i=end-1;i>=0;i--){if(myIdxs[i]===myIdxs[i+1]-1)start=i;else break;}
+    const streakDates=myDates.slice(start,end+1);
+    if(streakDates.length<minDays)continue;
+    const sEntries=entries.filter(e=>streakDates.includes(e.date));
+    let tQ=0,tV=0;
+    sEntries.forEach(e=>e.brokers.forEach(b=>{tQ+=Number(b.qty);tV+=Number(b.qty)*Number(b.price);}));
+    results.push({code,name,avgPrice:tQ>0?tV/tQ:0,days:streakDates.length,
+      dateRange:streakDates[0]+' ～ '+streakDates[streakDates.length-1],streakDates});
+  }
+  return results.sort((a,b)=>b.days-a.days);
+}
+
+function buildWatchlist() {
+  if(!cache.db){showToast('資料載入中，請稍候',true);return;}
+  const prices=cache.prices||{}, cust=cache.custodian||{};
+  const minDays=parseInt(document.getElementById('filter-days').value)||3;
+  const maxPct=parseFloat(document.getElementById('filter-pct').value)||5;
+  const watching=computeWatchlist(cache.db,minDays);
+  const area=document.getElementById('watchlist-area');
+  if(!watching.length){
+    area.innerHTML=`<div class="empty"><div class="empty-icon">🔍</div><div class="empty-text">目前無連續 ${minDays} 天以上的買超標的<br><span style="font-size:11px;color:var(--text3)">（中間有中斷即不計入）</span></div></div>`;return;
+  }
+  const grid=document.createElement('div');grid.className='watchlist-grid';
+  watching.forEach(w=>{
+    const cp=prices[w.code]?parseFloat(prices[w.code]):null;
+    let pct=null,cls='neutral',dc='var(--text2)',dl='';
+    if(cp&&w.avgPrice>0){
+      pct=(cp-w.avgPrice)/w.avgPrice*100;
+      if(pct>maxPct){cls='over';dc='var(--red)';dl='⚠ 超過上限';}
+      else if(pct>maxPct*.6){cls='warn';dc='var(--warn)';dl='⚡ 接近上限';}
+      else{cls='safe';dc='var(--green)';dl='✓ 符合條件';}
+    }
+    const c4=cust[w.code]||{w1:'',w2:'',w3:'',w4:''};
+    const vals=[c4.w1,c4.w2,c4.w3,c4.w4].map(v=>v!==''?parseInt(v):null);
+    const filled=vals.filter(v=>v!==null);
+    let custTrendHtml='<span style="color:var(--text3)">—</span>',sparkHtml='';
+    if(filled.length>=2){
+      const first=vals.find(v=>v!==null);
+      const last=[...vals].reverse().find(v=>v!==null);
+      const diff=last-first;
+      const diffPct=first>0?((diff/first)*100).toFixed(1):0;
+      const color=diff<0?'var(--green)':diff>0?'var(--red)':'var(--warn)';
+      const arrow=diff<0?'↓':diff>0?'↑':'→';
+      const judge=diff<0?'減少 ✓':diff>0?'增加 ✗':'持平';
+      custTrendHtml=`<span style="color:${color}">${arrow} ${Math.abs(diff).toLocaleString()} 人（${judge}）<br><span style="font-size:10px">${diffPct}%</span></span>`;
+      const allVals=vals.filter(v=>v!==null);
+      const minV=Math.min(...allVals),maxV=Math.max(...allVals),range=maxV-minV||1;
+      sparkHtml='<div class="cust-sparkline">'+vals.map(v=>{
+        if(v===null)return'<div class="cust-bar" style="height:4px;background:var(--border)"></div>';
+        const h=Math.max(4,Math.round(((v-minV)/range)*16)+4);
+        const c=v===last?(diff<=0?'var(--green)':'var(--red)'):'var(--text3)';
+        return`<div class="cust-bar" style="height:${h}px;background:${c}"></div>`;
+      }).join('')+'</div>';
+    }
+    // Broker combo analysis for this streak
+    const streakBrokers = [...new Set(
+      w.streakDates.flatMap(d =>
+        (cache.db||[]).filter(e => e.code===w.code && e.date===d)
+          .flatMap(e => e.brokers.map(b => b.broker))
+      )
+    )];
+    const comboSignals = analyzeBrokerCombo(streakBrokers);
+    const brokerTagsHTML = streakBrokers.map(b => brokerTagHTML(b)).join('');
+    const signalStrengthColor = { strong:'var(--green)', moderate:'var(--warn)', weak:'var(--red)', info:'var(--text2)' };
+    const comboSignalsHTML = comboSignals.map(s =>
+      `<div class="combo-signal" style="color:${signalStrengthColor[s.strength]||'var(--text2)'};font-size:11px;margin-top:4px">
+        <span class="sig-icon">${s.icon}</span>${s.text}
+      </div>`
+    ).join('');
+    const brokerComboHTML = `<div class="broker-combo">
+      <div class="broker-combo-title">📊 連續買超券商組合</div>
+      <div style="margin-bottom:6px">${brokerTagsHTML}</div>
+      ${comboSignalsHTML}
+    </div>`;
+
+    const card=document.createElement('div');card.className='watch-card '+cls;
+    card.innerHTML=`
+      <div class="wc-code">${w.code}</div>
+      <div class="wc-name">${w.name}</div>
+      <div class="wc-row"><span class="wc-label">📅 連續區間</span><span class="wc-val" style="font-size:10px">${w.dateRange}</span></div>
+      <div class="wc-row"><span class="wc-label">📊 連續天數</span><span><span class="badge badge-blue">${w.days} 天</span></span></div>
+      <div class="wc-row"><span class="wc-label">💰 加權均價</span><span class="wc-val">${w.avgPrice.toFixed(2)}</span></div>
+      <hr class="wc-divider">
+      <div class="wc-row">
+        <span class="wc-label">📈 現價</span>
+        <input class="price-inline-input" type="number" step="0.01" placeholder="輸入現價"
+          value="${prices[w.code]||''}" onchange="savePrice('${w.code}',this.value)">
+      </div>
+      ${pct!==null?`
+      <div class="wc-diff-bar"><div class="wc-diff-fill" style="width:${Math.min(Math.abs(pct)/maxPct*100,100)}%;background:${dc}"></div></div>
+      <div class="wc-row"><span class="wc-label" style="color:${dc}">${dl}</span><span class="wc-pct" style="color:${dc}">${pct>=0?'+':''}${pct.toFixed(2)}%</span></div>
+      `:`<div style="height:30px;display:flex;align-items:center"><span style="font-size:11px;color:var(--text3)">← 輸入現價後計算差距</span></div>`}
+      <div class="cust-section">
+        <div class="cust-title">🏦 集保人數（連續四週）</div>
+        <div class="cust-weeks">
+          <div class="cust-group"><label>W1（最舊）</label><input type="number" placeholder="人數" value="${c4.w1||''}" onchange="saveCust('${w.code}','w1',this.value)"></div>
+          <div class="cust-group"><label>W2</label><input type="number" placeholder="人數" value="${c4.w2||''}" onchange="saveCust('${w.code}','w2',this.value)"></div>
+          <div class="cust-group"><label>W3</label><input type="number" placeholder="人數" value="${c4.w3||''}" onchange="saveCust('${w.code}','w3',this.value)"></div>
+          <div class="cust-group"><label>W4（最新）</label><input type="number" placeholder="人數" value="${c4.w4||''}" onchange="saveCust('${w.code}','w4',this.value)"></div>
+        </div>
+        <div class="cust-result-row">
+          <div class="cust-trend">${custTrendHtml}</div>
+          ${sparkHtml}
+        </div>
+      </div>
+      ${brokerComboHTML}`;
+    grid.appendChild(card);
+  });
+  area.innerHTML='';area.appendChild(grid);
+}
+
+async function savePrice(code,val){
+  if(!cache.prices)cache.prices={};
+  cache.prices[code]=val;
+  try{await apiPost('savePrice',{code,price:val});buildWatchlist();}
+  catch(e){showToast('⚠ 現價同步失敗',true);}
+}
+async function saveCust(code,field,val){
+  if(!cache.custodian)cache.custodian={};
+  if(!cache.custodian[code])cache.custodian[code]={w1:'',w2:'',w3:'',w4:''};
+  cache.custodian[code][field]=val;
+  const c=cache.custodian[code];
+  try{await apiPost('saveCustodian',{code,w1:c.w1||'',w2:c.w2||'',w3:c.w3||'',w4:c.w4||''});
+    clearTimeout(window._ct);window._ct=setTimeout(()=>buildWatchlist(),300);}
+  catch(e){showToast('⚠ 集保資料同步失敗',true);}
+}
+
+// ── Holdings ──────────────────────────────────────────
+function computeHoldings(trades){
+  const h={};
+  [...trades].sort((a,b)=>String(a.date).localeCompare(String(b.date))||Number(a.id)-Number(b.id)).forEach(t=>{
+    if(!h[t.code])h[t.code]={name:t.name,shares:0,totalCost:0,avgCost:0};
+    const p=h[t.code];
+    const bs=Number(t.buyShares)||0,bp=Number(t.buyPrice)||0;
+    const ss=Number(t.sellShares)||0,sp=Number(t.sellPrice)||0;
+    if(bs>0&&bp>0){p.totalCost+=bp*bs;p.shares+=bs;p.avgCost=p.shares>0?p.totalCost/p.shares:0;}
+    if(ss>0&&sp>0&&p.shares>0){p.totalCost-=p.avgCost*ss;p.shares=Math.max(0,p.shares-ss);p.totalCost=Math.max(0,p.totalCost);p.avgCost=p.shares>0?p.totalCost/p.shares:0;}
+  });
+  return h;
+}
+function renderHoldings(){
+  const h=computeHoldings(cache.trades||[]);
+  const active=Object.entries(h).filter(([,v])=>v.shares>0);
+  const area=document.getElementById('holdings-area');
+  if(!active.length){area.innerHTML='<div class="empty" style="padding:16px"><div class="empty-text" style="font-size:12px">尚無持倉</div></div>';return;}
+  const grid=document.createElement('div');grid.className='holdings-grid';
+  active.forEach(([code,pos])=>{
+    const card=document.createElement('div');card.className='holding-card';
+    card.innerHTML=`<div class="hc-head"><span class="hc-name">${pos.name} <span style="color:var(--text2);font-size:11px;font-family:'IBM Plex Mono',monospace">${code}</span></span><span class="badge badge-blue">${pos.shares.toLocaleString()} 股</span></div>
+    <div class="hc-row"><span>加權平均成本</span><span>${pos.avgCost.toFixed(3)} 元</span></div>
+    <div class="hc-row"><span>總投入成本</span><span>${Math.round(pos.totalCost).toLocaleString()} 元</span></div>`;
+    grid.appendChild(card);
+  });
+  area.innerHTML='';area.appendChild(grid);
+}
+
+// ── Trade lookup ──────────────────────────────────────
+function lookupTradeCode(val) {
+  const name = lookupCode(val);
+  if (name) document.getElementById('tr-name').value = name;
+}
+
+// ── Save trade ────────────────────────────────────────
+async function saveTrade(){
+  const date=document.getElementById('tr-date').value;
+  const code=document.getElementById('tr-code').value.trim();
+  const name=document.getElementById('tr-name').value.trim();
+  const bp=parseFloat(document.getElementById('tr-buy').value)||0;
+  const bs=parseInt(document.getElementById('tr-buy-shares').value)||0;
+  const sp=parseFloat(document.getElementById('tr-sell').value)||0;
+  const ss2=parseInt(document.getElementById('tr-sell-shares').value)||0;
+  const yfc=document.getElementById('tr-yf-cost').value;
+  const yfp=document.getElementById('tr-yf-pnl').value;
+  const note=document.getElementById('tr-note').value;
+  if(!date||!code||!name){showToast('⚠ 請填寫日期、代碼、名稱',true);return;}
+  if(bs===0&&ss2===0){showToast('⚠ 請填寫買進或賣出股數',true);return;}
+  const btn=document.getElementById('trade-btn');
+  btn.disabled=true;btn.textContent='儲存中...';
+  setSyncStatus('syncing','儲存中...');
+  try{
+    const trade={id:Date.now(),date,code,name,buyPrice:bp,buyShares:bs,sellPrice:sp,sellShares:ss2,yfCost:yfc,yfPnl:yfp,note};
+    await apiPost('addTrade',trade);
+    if(!cache.trades)cache.trades=[];
+    cache.trades.push(trade);
+    showToast('✓ 已儲存交易：'+name);
+    ['tr-code','tr-name','tr-buy','tr-buy-shares','tr-sell','tr-sell-shares','tr-yf-cost','tr-yf-pnl','tr-note'].forEach(i=>document.getElementById(i).value='');
+    renderTrades();renderHoldings();updateStats();
+    setSyncStatus('ok','Google Sheets 已連線');
+  }catch(e){showToast('⚠ 儲存失敗',true);setSyncStatus('error','儲存失敗');}
+  btn.disabled=false;btn.textContent='✓ 儲存交易';
+}
+
+function renderTrades(){
+  const trades=cache.trades||[];
+  const wrap=document.getElementById('trades-table-wrap');
+  if(!trades.length){wrap.innerHTML='<div class="empty"><div class="empty-icon">💼</div><div class="empty-text">尚無交易紀錄</div></div>';return;}
+  const sorted=[...trades].sort((a,b)=>String(a.date).localeCompare(String(b.date))||Number(a.id)-Number(b.id));
+  const rp={};const pnlMap={};
+  sorted.forEach(t=>{
+    if(!rp[t.code])rp[t.code]={shares:0,totalCost:0,avgCost:0};
+    const p=rp[t.code];
+    const bs=Number(t.buyShares)||0,bp=Number(t.buyPrice)||0;
+    const ss=Number(t.sellShares)||0,sp=Number(t.sellPrice)||0;
+    if(bs>0&&bp>0){p.totalCost+=bp*bs;p.shares+=bs;p.avgCost=p.shares>0?p.totalCost/p.shares:0;}
+    if(ss>0&&sp>0&&p.avgCost>0){
+      const gain=(sp-p.avgCost)*ss,gainPct=((sp-p.avgCost)/p.avgCost)*100;
+      pnlMap[t.id]={gain,gainPct};
+      p.totalCost-=p.avgCost*ss;p.shares=Math.max(0,p.shares-ss);p.totalCost=Math.max(0,p.totalCost);p.avgCost=p.shares>0?p.totalCost/p.shares:0;
+    }
+  });
+  const byDate=[...trades].sort((a,b)=>String(b.date).localeCompare(String(a.date))||Number(b.id)-Number(a.id));
+  let html=`<table><thead><tr><th>日期</th><th>代碼</th><th>名稱</th><th>方向</th><th>價格</th><th>股數</th><th>系統損益</th><th>永豐成本</th><th>永豐損益%</th><th>備註</th><th></th></tr></thead><tbody>`;
+  byDate.forEach(t=>{
+    const bs=Number(t.buyShares)||0,bp=Number(t.buyPrice)||0;
+    const ss=Number(t.sellShares)||0,sp=Number(t.sellPrice)||0;
+    const pnl=pnlMap[t.id];
+    const sysStr=pnl?`<span style="color:${pnl.gain>=0?'var(--green)':'var(--red)'}">${pnl.gain>=0?'+':''}${Math.round(pnl.gain).toLocaleString()} 元<br><span style="font-size:10px">${pnl.gainPct>=0?'+':''}${pnl.gainPct.toFixed(2)}%</span></span>`:'<span style="color:var(--text3)">—</span>';
+    const yfcStr=t.yfCost?`${parseFloat(t.yfCost).toFixed(3)} 元`:'<span style="color:var(--text3)">—</span>';
+    const yfpStr=(t.yfPnl!==''&&t.yfPnl!=null)?`<span style="color:${parseFloat(t.yfPnl)>=0?'var(--green)':'var(--red)'}">${parseFloat(t.yfPnl)>=0?'+':''}${t.yfPnl}%</span>`:'<span style="color:var(--text3)">—</span>';
+    if(bs>0&&bp>0)html+=`<tr><td style="color:var(--text2)">${t.date}</td><td style="color:var(--accent2)">${t.code}</td><td>${t.name}</td><td><span class="badge badge-green">買進</span></td><td>${bp}</td><td>${bs.toLocaleString()}</td><td>—</td><td>${yfcStr}</td><td>${yfpStr}</td><td style="color:var(--text2);font-size:11px">${t.note||''}</td><td><button class="btn btn-danger" onclick="deleteTrade(${t.id})">✕</button></td></tr>`;
+    if(ss>0&&sp>0)html+=`<tr><td style="color:var(--text2)">${t.date}</td><td style="color:var(--accent2)">${t.code}</td><td>${t.name}</td><td><span class="badge badge-red">賣出</span></td><td>${sp}</td><td>${ss.toLocaleString()}</td><td>${sysStr}</td><td>${yfcStr}</td><td>${yfpStr}</td><td style="color:var(--text2);font-size:11px">${t.note||''}</td><td><button class="btn btn-danger" onclick="deleteTrade(${t.id})">✕</button></td></tr>`;
+  });
+  html+='</tbody></table>';wrap.innerHTML=html;
+}
+
+async function deleteTrade(id){
+  document.getElementById('confirm-text').textContent='確定要刪除這筆交易紀錄嗎？';
+  document.getElementById('confirm-overlay').classList.add('show');
+  document.getElementById('confirm-yes').onclick=async()=>{
+    closeConfirm();setSyncStatus('syncing','刪除中...');
+    try{await apiPost('deleteTrade',{id});cache.trades=cache.trades.filter(t=>Number(t.id)!==Number(id));renderTrades();renderHoldings();updateStats();showToast('🗑 已刪除');setSyncStatus('ok','Google Sheets 已連線');}
+    catch(e){showToast('⚠ 刪除失敗',true);setSyncStatus('error','刪除失敗');}
+  };
+}
+
+function renderHistory(){
+  const db=cache.db||[];
+  const code=document.getElementById('hist-code').value.trim().toLowerCase();
+  const broker=document.getElementById('hist-broker').value.trim();
+  const from=document.getElementById('hist-from').value;
+  const to=document.getElementById('hist-to').value;
+  let f=db.filter(e=>{
+    if(code&&e.code.toLowerCase()!==code&&!e.name.includes(code))return false;
+    if(broker&&!e.brokers.some(b=>b.broker.includes(broker)))return false;
+    if(from&&String(e.date)<from)return false;
+    if(to&&String(e.date)>to)return false;
+    return true;
+  }).sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+  const wrap=document.getElementById('history-table-wrap');
+  if(!f.length){wrap.innerHTML='<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">無符合條件的紀錄</div></div>';return;}
+  let html=`<table><thead><tr><th>日期</th><th>券商</th><th>代碼</th><th>名稱</th><th>買進張數</th><th>均價</th><th></th></tr></thead><tbody>`;
+  f.forEach(e=>{
+    e.brokers.forEach((b,bi)=>{
+      html+=`<tr>
+        ${bi===0?`<td rowspan="${e.brokers.length}" style="color:var(--text2)">${e.date}</td>`:''}
+        <td><span class="badge badge-gray">${b.broker}</span></td>
+        ${bi===0?`<td rowspan="${e.brokers.length}" style="color:var(--accent2)">${e.code}</td><td rowspan="${e.brokers.length}">${e.name}</td>`:''}
+        <td>${Number(b.qty).toLocaleString()}</td>
+        <td style="color:var(--warn)">${Number(b.price).toFixed(2)}</td>
+        ${bi===0?`<td rowspan="${e.brokers.length}"><button class="btn btn-danger" onclick="deleteEntry(${e.id})">✕</button></td>`:''}
+      </tr>`;
+    });
+  });
+  html+='</tbody></table>';wrap.innerHTML=html;
+}
+
+async function deleteEntry(id){
+  document.getElementById('confirm-text').textContent='確定要刪除這筆買超紀錄嗎？';
+  document.getElementById('confirm-overlay').classList.add('show');
+  document.getElementById('confirm-yes').onclick=async()=>{
+    closeConfirm();setSyncStatus('syncing','刪除中...');
+    try{await apiPost('deleteBuyover',{id});cache.db=cache.db.filter(e=>Number(e.id)!==Number(id));renderHistory();updateStats();showToast('🗑 已刪除');setSyncStatus('ok','Google Sheets 已連線');}
+    catch(e){showToast('⚠ 刪除失敗',true);setSyncStatus('error','刪除失敗');}
+  };
+}
+
+function closeConfirm(){document.getElementById('confirm-overlay').classList.remove('show');}
+function showToast(msg,isErr=false){
+  const t=document.getElementById('toast');t.textContent=msg;
+  t.className='toast'+(isErr?' err':'');t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+</script>
+
+
+</body></html>
