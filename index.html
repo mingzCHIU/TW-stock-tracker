@@ -538,9 +538,10 @@ function safeCode(val) {
 // ── 取今天日期（台灣時區，不依賴 Date() 的本地時區）──────
 function todayTW() {
   const now = new Date();
-  // 加 8 小時轉成台灣時間，再取 ISO 前 10 碼
-  const tw = new Date(now.getTime() + (8 * 60 * 60 * 1000) + (now.getTimezoneOffset() * 60 * 1000));
-  return tw.toISOString().slice(0, 10);
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
 }
 
 // ── Taiwan stock lookup table ─────────────────────────
