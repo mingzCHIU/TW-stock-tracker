@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0113)file:///C:/Users/chium/Downloads/%E8%82%A1%E7%A5%A8%E8%B2%B7%E8%B6%85%E8%BF%BD%E8%B9%A4%E7%B3%BB%E7%B5%B1_10.html -->
+<!-- saved from url=(0113)file:///C:/Users/chium/Downloads/%E8%82%A1%E7%A5%A8%E8%B2%B7%E8%B6%85%E8%BF%BD%E8%B9%A4%E7%B3%BB%E7%B5%B1_11.html -->
 <html lang="zh-TW"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -142,6 +142,7 @@ tr:hover td{background:rgba(0,229,160,.03)}
 .confirm-text{font-size:13px;color:var(--text2);margin-bottom:18px}
 .confirm-actions{display:flex;gap:10px}
 .yf-sep{font-size:11px;color:var(--text3);background:var(--bg3);border-radius:5px;padding:6px 10px;margin-bottom:8px;font-family:'IBM Plex Mono',monospace}
+@media(max-width:600px){.holdings-exit-grid{grid-template-columns:1fr!important}}
 </style>
 </head>
 <body>
@@ -326,8 +327,38 @@ tr:hover td{background:rgba(0,229,160,.03)}
 <!-- TRADES -->
 <div id="panel-trades" class="panel active">
   <div class="section">
-    <div class="section-title">目前持倉</div>
-    <div id="holdings-area"><div class="holdings-grid"><div class="holding-card">
+    <div class="section-title">新增交易</div>
+    <div class="notice">股數為零股（股）。買進/賣出可同一筆填，也可分開記錄。</div>
+    <div class="form-row">
+      <div class="form-group" style="flex:0 0 145px"><label>日期</label><input type="date" id="tr-date"></div>
+      <div class="form-group" style="flex:0 0 100px">
+        <label>股票代碼</label>
+        <input type="text" id="tr-code" placeholder="2887" oninput="lookupTradeCode(this.value)">
+      </div>
+      <div class="form-group" style="flex:2"><label>股票名稱</label><input type="text" id="tr-name" placeholder="自動帶入或手動輸入"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>買進價（元）</label><input type="number" id="tr-buy" placeholder="23.80" step="0.01"></div>
+      <div class="form-group"><label>買進股數</label><input type="number" id="tr-buy-shares" placeholder="200" min="0"></div>
+      <div class="form-group"><label>賣出價（元）</label><input type="number" id="tr-sell" placeholder="—" step="0.01"></div>
+      <div class="form-group"><label>賣出股數</label><input type="number" id="tr-sell-shares" placeholder="—" min="0"></div>
+    </div>
+    <div class="yf-sep">永豐 App 對照（選填）</div>
+    <div class="form-row">
+      <div class="form-group"><label>永豐：平均成本（元）</label><input type="number" id="tr-yf-cost" placeholder="選填" step="0.001"></div>
+      <div class="form-group"><label>永豐：損益比例（%）</label><input type="number" id="tr-yf-pnl" placeholder="如 3.5" step="0.01"></div>
+      <div class="form-group"><label>備註</label><input type="text" id="tr-note" placeholder="選填"></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" id="trade-btn" onclick="saveTrade()">✓ 儲存交易</button>
+    </div>
+  </div>
+
+  <!-- Holdings + Exit Evaluator side by side -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px" id="holdings-exit-grid" class="holdings-exit-grid">
+    <div class="section" style="margin-bottom:0">
+      <div class="section-title">目前持倉</div>
+      <div id="holdings-area" style="max-height:520px;overflow-y:auto;padding-right:4px"><div class="holdings-grid"><div class="holding-card">
       <div class="hc-head">
         <span class="hc-name">台新新光金 <span style="color:var(--text2);font-size:11px;font-family:&#39;IBM Plex Mono&#39;,monospace">2887</span></span>
         <span class="badge badge-blue">800 股</span>
@@ -371,45 +402,63 @@ tr:hover td{background:rgba(0,229,160,.03)}
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px">
         <div style="display:flex;flex-direction:column;gap:3px">
           <label style="font-size:10px;color:var(--text2)">預估殖利率 (%)</label>
-          <input type="number" step="0.1" placeholder="如 5.5" style="background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:5px 8px;border-radius:5px;font-size:12px;font-family:&#39;IBM Plex Mono&#39;,monospace;outline:none;width:100%" value="" onchange="saveYieldInput(&#39;0056&#39;, this.value)">
+          <input type="number" step="0.1" placeholder="如 5.5" style="background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:5px 8px;border-radius:5px;font-size:12px;font-family:&#39;IBM Plex Mono&#39;,monospace;outline:none;width:100%" value="4.62" onchange="saveYieldInput(&#39;0056&#39;, this.value)">
         </div>
         <div style="display:flex;flex-direction:column;gap:3px">
           <label style="font-size:10px;color:var(--text2)">現價 (元)</label>
-          <input type="number" step="0.01" placeholder="如 23.5" style="background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:5px 8px;border-radius:5px;font-size:12px;font-family:&#39;IBM Plex Mono&#39;,monospace;outline:none;width:100%" value="" onchange="saveYieldInput(&#39;0056_price&#39;, this.value)">
+          <input type="number" step="0.01" placeholder="如 23.5" style="background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:5px 8px;border-radius:5px;font-size:12px;font-family:&#39;IBM Plex Mono&#39;,monospace;outline:none;width:100%" value="44.02" onchange="saveYieldInput(&#39;0056_price&#39;, this.value)">
         </div>
       </div>
       
-        <div style="background:var(--bg3);border:1px dashed var(--border);border-radius:6px;padding:6px 10px;margin-top:8px;font-size:10px;color:var(--text3)">
-          填入殖利率與現價後顯示出場評估
+        <div style="background:rgba(255,68,85,.06);border:1px solid var(--red)30;border-radius:6px;padding:8px 10px;margin-top:8px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <span style="font-size:10px;color:var(--text2);font-family:&#39;IBM Plex Mono&#39;,monospace;letter-spacing:.08em">出場評估</span>
+            <span style="font-size:11px;font-weight:700;color:var(--red);font-family:&#39;IBM Plex Mono&#39;,monospace">帳面虧損</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:6px">
+            <div style="font-size:10px;color:var(--text2)">現價</div>
+            <div style="font-size:12px;font-family:&#39;IBM Plex Mono&#39;,monospace;text-align:right">44.02 元</div>
+            <div style="font-size:10px;color:var(--text2)">未實現損益%</div>
+            <div style="font-size:12px;font-family:&#39;IBM Plex Mono&#39;,monospace;text-align:right;color:var(--red)">-1.74%</div>
+            <div style="font-size:10px;color:var(--text2)">未實現損益額</div>
+            <div style="font-size:12px;font-family:&#39;IBM Plex Mono&#39;,monospace;text-align:right;color:var(--red)">-312 元</div>
+            <div style="font-size:10px;color:var(--text2)">獲利÷殖利率</div>
+            <div style="font-size:14px;font-weight:700;font-family:&#39;IBM Plex Mono&#39;,monospace;text-align:right;color:var(--red)">— 倍</div>
+          </div>
+          <div style="font-size:10px;color:var(--red);line-height:1.5">→ 低於買進成本，評估停損條件</div>
         </div></div></div></div>
-  </div>
-  <div class="section">
-    <div class="section-title">新增交易</div>
-    <div class="notice">股數為零股（股）。買進/賣出可同一筆填，也可分開記錄。</div>
-    <div class="form-row">
-      <div class="form-group" style="flex:0 0 145px"><label>日期</label><input type="date" id="tr-date"></div>
-      <div class="form-group" style="flex:0 0 100px">
-        <label>股票代碼</label>
-        <input type="text" id="tr-code" placeholder="2887" oninput="lookupTradeCode(this.value)">
+    </div>
+    <div class="section" style="margin-bottom:0">
+      <div class="section-title">出場評估計算機</div>
+      <div class="notice" style="margin-bottom:12px">任何股票皆可計算，不限於持倉紀錄。</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>股票代碼／名稱</label>
+          <input type="text" id="ev-code" placeholder="如 2887" oninput="onEvCodeInput(this.value)">
+        </div>
+        <div class="form-group" style="flex:2">
+          <label>股票名稱</label>
+          <input type="text" id="ev-name" placeholder="自動帶入或手動輸入">
+        </div>
       </div>
-      <div class="form-group" style="flex:2"><label>股票名稱</label><input type="text" id="tr-name" placeholder="自動帶入或手動輸入"></div>
-    </div>
-    <div class="form-row">
-      <div class="form-group"><label>買進價（元）</label><input type="number" id="tr-buy" placeholder="23.80" step="0.01"></div>
-      <div class="form-group"><label>買進股數</label><input type="number" id="tr-buy-shares" placeholder="200" min="0"></div>
-      <div class="form-group"><label>賣出價（元）</label><input type="number" id="tr-sell" placeholder="—" step="0.01"></div>
-      <div class="form-group"><label>賣出股數</label><input type="number" id="tr-sell-shares" placeholder="—" min="0"></div>
-    </div>
-    <div class="yf-sep">永豐 App 對照（選填）</div>
-    <div class="form-row">
-      <div class="form-group"><label>永豐：平均成本（元）</label><input type="number" id="tr-yf-cost" placeholder="選填" step="0.001"></div>
-      <div class="form-group"><label>永豐：損益比例（%）</label><input type="number" id="tr-yf-pnl" placeholder="如 3.5" step="0.01"></div>
-      <div class="form-group"><label>備註</label><input type="text" id="tr-note" placeholder="選填"></div>
-    </div>
-    <div class="form-actions">
-      <button class="btn btn-primary" id="trade-btn" onclick="saveTrade()">✓ 儲存交易</button>
+      <div class="form-row">
+        <div class="form-group">
+          <label>買進均價（元）</label>
+          <input type="number" id="ev-cost" placeholder="如 23.2" step="0.001" oninput="calcExit()">
+        </div>
+        <div class="form-group">
+          <label>現價（元）</label>
+          <input type="number" id="ev-price" placeholder="如 23.5" step="0.01" oninput="calcExit()">
+        </div>
+        <div class="form-group">
+          <label>預估殖利率（%）</label>
+          <input type="number" id="ev-yield" placeholder="如 5.5" step="0.1" oninput="calcExit()">
+        </div>
+      </div>
+      <div id="ev-result" style="margin-top:4px"><div style="font-size:11px;color:var(--text3);padding:8px 0">填入買進均價、現價、殖利率後自動計算</div></div>
     </div>
   </div>
+
   <div class="section">
     <div class="section-title">交易紀錄</div>
     <div class="table-wrap" id="trades-table-wrap"><table><thead><tr><th>日期</th><th>代碼</th><th>名稱</th><th>方向</th><th>價格</th><th>股數</th><th>系統損益</th><th>永豐成本</th><th>永豐損益%</th><th>備註</th><th></th></tr></thead><tbody><tr><td style="color:var(--text2)">2026-05-18</td><td style="color:var(--accent2)">0056</td><td>元大高股息</td><td><span class="badge badge-green">買進</span></td><td>44.7</td><td>200</td><td>—</td><td><span style="color:var(--text3)">—</span></td><td><span style="color:var(--text3)">—</span></td><td style="color:var(--text2);font-size:11px">$8,952</td><td><button class="btn btn-danger" onclick="deleteTrade(1779161547068)">✕</button></td></tr><tr><td style="color:var(--text2)">2026-05-18</td><td style="color:var(--accent2)">0056</td><td>元大高股息</td><td><span class="badge badge-green">買進</span></td><td>44.9</td><td>200</td><td>—</td><td><span style="color:var(--text3)">—</span></td><td><span style="color:var(--text3)">—</span></td><td style="color:var(--text2);font-size:11px">$8,992</td><td><button class="btn btn-danger" onclick="deleteTrade(1779154933726)">✕</button></td></tr><tr><td style="color:var(--text2)">2026-05-14</td><td style="color:var(--accent2)">2887</td><td>台新新光金</td><td><span class="badge badge-green">買進</span></td><td>23.8</td><td>300</td><td>—</td><td><span style="color:var(--text3)">—</span></td><td><span style="color:var(--text3)">—</span></td><td style="color:var(--text2);font-size:11px">$7,150</td><td><button class="btn btn-danger" onclick="deleteTrade(1778993626063)">✕</button></td></tr><tr><td style="color:var(--text2)">2026-05-14</td><td style="color:var(--accent2)">2887</td><td>台新新光金</td><td><span class="badge badge-green">買進</span></td><td>23.75</td><td>300</td><td>—</td><td><span style="color:var(--text3)">—</span></td><td><span style="color:var(--text3)">—</span></td><td style="color:var(--text2);font-size:11px">$7,135</td><td><button class="btn btn-danger" onclick="deleteTrade(1778993601265)">✕</button></td></tr><tr><td style="color:var(--text2)">2026-05-13</td><td style="color:var(--accent2)">2887</td><td>台新新光金</td><td><span class="badge badge-green">買進</span></td><td>23.2</td><td>200</td><td>—</td><td><span style="color:var(--text3)">—</span></td><td><span style="color:var(--text3)">—</span></td><td style="color:var(--text2);font-size:11px">$4,646</td><td><button class="btn btn-danger" onclick="deleteTrade(1778993564138)">✕</button></td></tr></tbody></table></div>
@@ -782,6 +831,7 @@ document.getElementById('inp-date').value = today();
 document.getElementById('tr-date').value = today();
 buildStockRows();
 showBrokerHint(document.getElementById('inp-broker').value);
+document.getElementById('ev-result').innerHTML = '<div style="font-size:11px;color:var(--text3);padding:8px 0">填入買進均價、現價、殖利率後自動計算</div>';
 loadAll();
 
 async function loadAll() {
@@ -1367,6 +1417,116 @@ async function deleteEntry(id){
 }
 
 function closeConfirm(){document.getElementById('confirm-overlay').classList.remove('show');}
+// ── Exit Evaluator ───────────────────────────────────
+function onEvCodeInput(val) {
+  const code = val.trim();
+  // Try code lookup first
+  const nameByCode = lookupCode(code);
+  if (nameByCode) {
+    document.getElementById('ev-name').value = nameByCode;
+  } else {
+    // Try name lookup
+    const codeByName = lookupName(code);
+    if (codeByName) {
+      document.getElementById('ev-code').value = codeByName;
+      document.getElementById('ev-name').value = STOCKS[codeByName] || '';
+    }
+  }
+  // Also try to pre-fill from holdings
+  const h = computeHoldings(cache.trades || []);
+  const safeC = safeCode(code);
+  if (h[safeC] && h[safeC].shares > 0) {
+    document.getElementById('ev-cost').value = h[safeC].avgCost.toFixed(3);
+  }
+  // Pre-fill yield if saved
+  const yields = loadYields();
+  if (yields[safeC]) document.getElementById('ev-yield').value = yields[safeC];
+  if (yields[safeC+'_price']) document.getElementById('ev-price').value = yields[safeC+'_price'];
+  calcExit();
+}
+
+function calcExit() {
+  const cost  = parseFloat(document.getElementById('ev-cost').value);
+  const price = parseFloat(document.getElementById('ev-price').value);
+  const yld   = parseFloat(document.getElementById('ev-yield').value);
+  const box   = document.getElementById('ev-result');
+
+  if (!cost || !price || !yld) {
+    box.innerHTML = '<div style="font-size:11px;color:var(--text3);padding:8px 0">填入買進均價、現價、殖利率後自動計算</div>';
+    return;
+  }
+
+  const unrealizedPct = (price - cost) / cost * 100;
+  const multiple = unrealizedPct / yld;
+  const unrealizedAmt = price - cost;
+
+  let signal='', sigColor='var(--text2)', advice='', sigBg='rgba(122,154,181,.08)';
+  if (multiple >= 7) {
+    signal='賣出訊號強 🔴'; sigColor='var(--red)'; sigBg='rgba(255,68,85,.08)';
+    advice='已達 7 倍以上，考慮全部賣出';
+  } else if (multiple >= 5) {
+    signal='留意出場 🟠'; sigColor='#ff8c69'; sigBg='rgba(255,140,105,.08)';
+    advice='5～6 倍，可考慮再賣 1/3';
+  } else if (multiple >= 3) {
+    signal='可部分賣出 ⚡'; sigColor='var(--warn)'; sigBg='rgba(255,204,0,.08)';
+    advice='達 3 倍，可考慮賣出 1/3';
+  } else if (unrealizedPct > 0) {
+    signal='持續持有 ✓'; sigColor='var(--green)'; sigBg='rgba(0,229,160,.06)';
+    advice = `距 3 倍門檻還需 +${(3*yld - unrealizedPct).toFixed(1)}%（現價需達 ${(cost*(1+3*yld/100)).toFixed(2)} 元）`;
+  } else {
+    signal='帳面虧損 ⚠'; sigColor='var(--red)'; sigBg='rgba(255,68,85,.06)';
+    advice='低於買進成本，評估停損條件';
+  }
+
+  // Generate milestone table
+  const milestones = [
+    { label:'3 倍門檻（賣 1/3）', pct: 3*yld, price: cost*(1+3*yld/100) },
+    { label:'5 倍門檻（再賣 1/3）', pct: 5*yld, price: cost*(1+5*yld/100) },
+    { label:'7 倍門檻（全賣）', pct: 7*yld, price: cost*(1+7*yld/100) },
+  ];
+
+  const milestoneRows = milestones.map(m => {
+    const reached = unrealizedPct >= m.pct;
+    const diff = m.price - price;
+    return `<tr style="opacity:${reached?1:0.55}">
+      <td style="padding:4px 6px;font-size:11px;color:${reached?'var(--text)':'var(--text2)'}">${reached?'✓':''} ${m.label}</td>
+      <td style="padding:4px 6px;font-size:11px;font-family:'IBM Plex Mono',monospace;text-align:right;color:var(--accent2)">${m.price.toFixed(2)} 元</td>
+      <td style="padding:4px 6px;font-size:11px;font-family:'IBM Plex Mono',monospace;text-align:right;color:${reached?'var(--green)':'var(--text3)'}">${reached?'已達':('差 '+diff.toFixed(2)+' 元')}</td>
+    </tr>`;
+  }).join('');
+
+  box.innerHTML = `
+    <div style="background:${sigBg};border:1px solid ${sigColor}30;border-radius:8px;padding:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <span style="font-size:13px;font-weight:700;color:${sigColor}">${signal}</span>
+        <span style="font-size:20px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:${sigColor}">${multiple > 0 ? multiple.toFixed(2)+' 倍' : '—'}</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px">
+        <div style="background:var(--bg3);border-radius:5px;padding:6px 8px">
+          <div style="font-size:9px;color:var(--text3);margin-bottom:2px">買進均價</div>
+          <div style="font-size:13px;font-family:'IBM Plex Mono',monospace">${cost.toFixed(2)}</div>
+        </div>
+        <div style="background:var(--bg3);border-radius:5px;padding:6px 8px">
+          <div style="font-size:9px;color:var(--text3);margin-bottom:2px">現價</div>
+          <div style="font-size:13px;font-family:'IBM Plex Mono',monospace">${price.toFixed(2)}</div>
+        </div>
+        <div style="background:var(--bg3);border-radius:5px;padding:6px 8px">
+          <div style="font-size:9px;color:var(--text3);margin-bottom:2px">未實現%</div>
+          <div style="font-size:13px;font-family:'IBM Plex Mono',monospace;color:${unrealizedPct>=0?'var(--green)':'var(--red)'}">${unrealizedPct>=0?'+':''}${unrealizedPct.toFixed(2)}%</div>
+        </div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:8px">
+        <thead><tr>
+          <th style="font-size:9px;color:var(--text3);padding:3px 6px;text-align:left;border-bottom:1px solid var(--border)">里程碑</th>
+          <th style="font-size:9px;color:var(--text3);padding:3px 6px;text-align:right;border-bottom:1px solid var(--border)">目標股價</th>
+          <th style="font-size:9px;color:var(--text3);padding:3px 6px;text-align:right;border-bottom:1px solid var(--border)">狀態</th>
+        </tr></thead>
+        <tbody>${milestoneRows}</tbody>
+      </table>
+      <div style="font-size:10px;color:${sigColor};line-height:1.6">→ ${advice}</div>
+    </div>`;
+}
+
 function showToast(msg,isErr=false){
   const t=document.getElementById('toast');t.textContent=msg;
   t.className='toast'+(isErr?' err':'');t.classList.add('show');
