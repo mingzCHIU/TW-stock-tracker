@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0112)file:///C:/Users/chium/Downloads/%E8%82%A1%E7%A5%A8%E8%B2%B7%E8%B6%85%E8%BF%BD%E8%B9%A4%E7%B3%BB%E7%B5%B1_8.html -->
+<!-- saved from url=(0112)file:///C:/Users/chium/Downloads/%E8%82%A1%E7%A5%A8%E8%B2%B7%E8%B6%85%E8%BF%BD%E8%B9%A4%E7%B3%BB%E7%B5%B1_9.html -->
 <html lang="zh-TW"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -152,8 +152,8 @@ tr:hover td{background:rgba(0,229,160,.03)}
     <div class="header-sub">Top5 Broker Buy-Over Tracker</div>
   </div>
   <div class="sync-status">
-    <div class="sync-dot" id="sync-dot"></div>
-    <span id="sync-text" style="color: var(--text2);">Google Sheets 已連線</span>
+    <div class="sync-dot error" id="sync-dot"></div>
+    <span id="sync-text" style="color: var(--red);">連線失敗</span>
   </div>
 </div>
 
@@ -300,10 +300,10 @@ tr:hover td{background:rgba(0,229,160,.03)}
   <div class="section">
     <div class="section-title">資料庫概況</div>
     <div class="stats-row">
-      <div class="stat-card"><div class="stat-label">紀錄天數</div><div class="stat-val" id="stat-days">2</div></div>
-      <div class="stat-card"><div class="stat-label">標的總數</div><div class="stat-val" id="stat-stocks">21</div></div>
-      <div class="stat-card"><div class="stat-label">觀察中</div><div class="stat-val" id="stat-watching">0</div></div>
-      <div class="stat-card"><div class="stat-label">持倉標的</div><div class="stat-val" id="stat-positions">0</div></div>
+      <div class="stat-card"><div class="stat-label">紀錄天數</div><div class="stat-val" id="stat-days">—</div></div>
+      <div class="stat-card"><div class="stat-label">標的總數</div><div class="stat-val" id="stat-stocks">—</div></div>
+      <div class="stat-card"><div class="stat-label">觀察中</div><div class="stat-val" id="stat-watching">—</div></div>
+      <div class="stat-card"><div class="stat-label">持倉標的</div><div class="stat-val" id="stat-positions">—</div></div>
     </div>
   </div>
 </div>
@@ -327,7 +327,7 @@ tr:hover td{background:rgba(0,229,160,.03)}
 <div id="panel-trades" class="panel">
   <div class="section">
     <div class="section-title">目前持倉</div>
-    <div id="holdings-area"><div class="empty" style="padding:16px"><div class="empty-text" style="font-size:12px">尚無持倉</div></div></div>
+    <div id="holdings-area"><div class="loading">載入中...</div></div>
   </div>
   <div class="section">
     <div class="section-title">新增交易</div>
@@ -358,7 +358,7 @@ tr:hover td{background:rgba(0,229,160,.03)}
   </div>
   <div class="section">
     <div class="section-title">交易紀錄</div>
-    <div class="table-wrap" id="trades-table-wrap"><div class="empty"><div class="empty-icon">💼</div><div class="empty-text">尚無交易紀錄</div></div></div>
+    <div class="table-wrap" id="trades-table-wrap"><div class="loading">載入中...</div></div>
   </div>
 </div>
 
@@ -380,7 +380,7 @@ tr:hover td{background:rgba(0,229,160,.03)}
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="toast err" id="toast">⚠ 無法連線到 Google Sheets</div>
 <div class="confirm-overlay" id="confirm-overlay">
   <div class="confirm-box">
     <div class="confirm-title">確認刪除</div>
@@ -411,6 +411,25 @@ function safeDate(val) {
     return `${y}-${String(parts[0]).padStart(2,'0')}-${String(parts[1]).padStart(2,'0')}`;
   }
   return s.slice(0, 10);
+}
+
+// ── 股票代碼正規化：補回前導零 ──────────────────────────
+function safeCode(val) {
+  if (val === null || val === undefined || val === '') return '';
+  const s = String(val).trim();
+  if (!/^\d+$/.test(s)) return s; // 含字母（如 00981A）直接回傳
+
+  const n = parseInt(s);
+  // 對照 STOCKS 表找最長的匹配（補零後）
+  // 先嘗試補到6碼、5碼、4碼，看哪個在 STOCKS 裡找得到
+  for (const len of [6, 5, 4]) {
+    const padded = s.padStart(len, '0');
+    if (STOCKS[padded] !== undefined) return padded;
+  }
+  // 沒找到就用長度推斷：1~2碼補到4碼，3碼補到5碼
+  if (s.length <= 2) return s.padStart(4, '0');
+  if (s.length === 3) return s.padStart(5, '0');
+  return s;
 }
 
 // ── 取今天日期（台灣時區，不依賴 Date() 的本地時區）──────
@@ -718,8 +737,8 @@ async function loadAll() {
       apiGet('getBuyover'), apiGet('getTrades'),
       apiGet('getCustodian'), apiGet('getPrices')
     ]);
-    cache.db = (Array.isArray(db) ? db : []).map(e => ({ ...e, date: safeDate(e.date) }));
-    cache.trades = (Array.isArray(trades) ? trades : []).map(t => ({ ...t, date: safeDate(t.date) }));
+    cache.db = (Array.isArray(db) ? db : []).map(e => ({ ...e, date: safeDate(e.date), code: safeCode(e.code) }));
+    cache.trades = (Array.isArray(trades) ? trades : []).map(t => ({ ...t, date: safeDate(t.date), code: safeCode(t.code) }));
     cache.custodian = {};
     (Array.isArray(cust)?cust:[]).forEach(r => cache.custodian[r.code] = {w1:r.w1||'',w2:r.w2||'',w3:r.w3||'',w4:r.w4||''});
     cache.prices = {};
