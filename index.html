@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0113)file:///C:/Users/chium/Downloads/%E8%82%A1%E7%A5%A8%E8%B2%B7%E8%B6%85%E8%BF%BD%E8%B9%A4%E7%B3%BB%E7%B5%B1_14.html -->
+<!-- saved from url=(0113)file:///C:/Users/chium/Downloads/%E8%82%A1%E7%A5%A8%E8%B2%B7%E8%B6%85%E8%BF%BD%E8%B9%A4%E7%B3%BB%E7%B5%B1_15.html -->
 <html lang="zh-TW"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -153,8 +153,8 @@ tr:hover td{background:rgba(0,229,160,.03)}
     <div class="header-sub">Top5 Broker Buy-Over Tracker</div>
   </div>
   <div class="sync-status">
-    <div class="sync-dot" id="sync-dot"></div>
-    <span id="sync-text" style="color: var(--text2);">Google Sheets 已連線</span>
+    <div class="sync-dot error" id="sync-dot"></div>
+    <span id="sync-text" style="color: var(--red);">連線失敗</span>
   </div>
 </div>
 
@@ -301,10 +301,10 @@ tr:hover td{background:rgba(0,229,160,.03)}
   <div class="section">
     <div class="section-title">資料庫概況</div>
     <div class="stats-row">
-      <div class="stat-card"><div class="stat-label">紀錄天數</div><div class="stat-val" id="stat-days">10</div></div>
-      <div class="stat-card"><div class="stat-label">標的總數</div><div class="stat-val" id="stat-stocks">69</div></div>
-      <div class="stat-card"><div class="stat-label">觀察中</div><div class="stat-val" id="stat-watching">7</div></div>
-      <div class="stat-card"><div class="stat-label">持倉標的</div><div class="stat-val" id="stat-positions">2</div></div>
+      <div class="stat-card"><div class="stat-label">紀錄天數</div><div class="stat-val" id="stat-days">—</div></div>
+      <div class="stat-card"><div class="stat-label">標的總數</div><div class="stat-val" id="stat-stocks">—</div></div>
+      <div class="stat-card"><div class="stat-label">觀察中</div><div class="stat-val" id="stat-watching">—</div></div>
+      <div class="stat-card"><div class="stat-label">持倉標的</div><div class="stat-val" id="stat-positions">—</div></div>
     </div>
   </div>
 </div>
@@ -358,75 +358,7 @@ tr:hover td{background:rgba(0,229,160,.03)}
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px" id="holdings-exit-grid" class="holdings-exit-grid">
     <div class="section" style="margin-bottom:0">
       <div class="section-title">目前持倉</div>
-      <div id="holdings-area" style="max-height:520px;overflow-y:auto;padding-right:4px"><div class="holdings-grid"><div class="holding-card">
-      <div class="hc-head">
-        <span class="hc-name">台新新光金 <span style="color:var(--text2);font-size:11px;font-family:&#39;IBM Plex Mono&#39;,monospace">2887</span></span>
-        <span class="badge badge-blue">800 股</span>
-      </div>
-      <div class="hc-row"><span>加權平均成本</span><span>23.631 元</span></div>
-      <div class="hc-row"><span>總投入成本</span><span>18,905 元</span></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px">
-        <div style="display:flex;flex-direction:column;gap:3px">
-          <label style="font-size:10px;color:var(--text2)">預估殖利率 (%)</label>
-          <input type="number" step="0.1" placeholder="如 5.5" style="background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:5px 8px;border-radius:5px;font-size:12px;font-family:&#39;IBM Plex Mono&#39;,monospace;outline:none;width:100%" value="4.21" onchange="saveYieldInput(&#39;2887&#39;, this.value)">
-        </div>
-        <div style="display:flex;flex-direction:column;gap:3px">
-          <label style="font-size:10px;color:var(--text2)">現價 (元)</label>
-          <input type="number" step="0.01" placeholder="如 23.5" style="background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:5px 8px;border-radius:5px;font-size:12px;font-family:&#39;IBM Plex Mono&#39;,monospace;outline:none;width:100%" value="26.62" onchange="saveYieldInput(&#39;2887_price&#39;, this.value)">
-        </div>
-      </div>
-      
-        <div style="background:rgba(255,204,0,.08);border:1px solid var(--warn)30;border-radius:6px;padding:8px 10px;margin-top:8px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-            <span style="font-size:10px;color:var(--text2);font-family:&#39;IBM Plex Mono&#39;,monospace;letter-spacing:.08em">出場評估</span>
-            <span style="font-size:11px;font-weight:700;color:var(--warn);font-family:&#39;IBM Plex Mono&#39;,monospace">可部分賣出</span>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:6px">
-            <div style="font-size:10px;color:var(--text2)">現價</div>
-            <div style="font-size:12px;font-family:&#39;IBM Plex Mono&#39;,monospace;text-align:right">26.62 元</div>
-            <div style="font-size:10px;color:var(--text2)">未實現損益%</div>
-            <div style="font-size:12px;font-family:&#39;IBM Plex Mono&#39;,monospace;text-align:right;color:var(--green)">+12.65%</div>
-            <div style="font-size:10px;color:var(--text2)">未實現損益額</div>
-            <div style="font-size:12px;font-family:&#39;IBM Plex Mono&#39;,monospace;text-align:right;color:var(--green)">+2,391 元</div>
-            <div style="font-size:10px;color:var(--text2)">獲利÷殖利率</div>
-            <div style="font-size:14px;font-weight:700;font-family:&#39;IBM Plex Mono&#39;,monospace;text-align:right;color:var(--warn)">3.00 倍</div>
-          </div>
-          <div style="font-size:10px;color:var(--warn);line-height:1.5">→ 已達 3 倍，可考慮賣出 1/3</div>
-        </div></div><div class="holding-card">
-      <div class="hc-head">
-        <span class="hc-name">元大高股息 <span style="color:var(--text2);font-size:11px;font-family:&#39;IBM Plex Mono&#39;,monospace">0056</span></span>
-        <span class="badge badge-blue">600 股</span>
-      </div>
-      <div class="hc-row"><span>加權平均成本</span><span>44.567 元</span></div>
-      <div class="hc-row"><span>總投入成本</span><span>26,740 元</span></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px">
-        <div style="display:flex;flex-direction:column;gap:3px">
-          <label style="font-size:10px;color:var(--text2)">預估殖利率 (%)</label>
-          <input type="number" step="0.1" placeholder="如 5.5" style="background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:5px 8px;border-radius:5px;font-size:12px;font-family:&#39;IBM Plex Mono&#39;,monospace;outline:none;width:100%" value="4.62" onchange="saveYieldInput(&#39;0056&#39;, this.value)">
-        </div>
-        <div style="display:flex;flex-direction:column;gap:3px">
-          <label style="font-size:10px;color:var(--text2)">現價 (元)</label>
-          <input type="number" step="0.01" placeholder="如 23.5" style="background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:5px 8px;border-radius:5px;font-size:12px;font-family:&#39;IBM Plex Mono&#39;,monospace;outline:none;width:100%" value="44.02" onchange="saveYieldInput(&#39;0056_price&#39;, this.value)">
-        </div>
-      </div>
-      
-        <div style="background:rgba(255,68,85,.06);border:1px solid var(--red)30;border-radius:6px;padding:8px 10px;margin-top:8px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-            <span style="font-size:10px;color:var(--text2);font-family:&#39;IBM Plex Mono&#39;,monospace;letter-spacing:.08em">出場評估</span>
-            <span style="font-size:11px;font-weight:700;color:var(--red);font-family:&#39;IBM Plex Mono&#39;,monospace">帳面虧損</span>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:6px">
-            <div style="font-size:10px;color:var(--text2)">現價</div>
-            <div style="font-size:12px;font-family:&#39;IBM Plex Mono&#39;,monospace;text-align:right">44.02 元</div>
-            <div style="font-size:10px;color:var(--text2)">未實現損益%</div>
-            <div style="font-size:12px;font-family:&#39;IBM Plex Mono&#39;,monospace;text-align:right;color:var(--red)">-1.23%</div>
-            <div style="font-size:10px;color:var(--text2)">未實現損益額</div>
-            <div style="font-size:12px;font-family:&#39;IBM Plex Mono&#39;,monospace;text-align:right;color:var(--red)">-328 元</div>
-            <div style="font-size:10px;color:var(--text2)">獲利÷殖利率</div>
-            <div style="font-size:14px;font-weight:700;font-family:&#39;IBM Plex Mono&#39;,monospace;text-align:right;color:var(--red)">— 倍</div>
-          </div>
-          <div style="font-size:10px;color:var(--red);line-height:1.5">→ 低於買進成本，評估停損條件</div>
-        </div></div></div></div>
+      <div id="holdings-area" style="max-height:520px;overflow-y:auto;padding-right:4px"><div class="loading">載入中...</div></div>
     </div>
     <div class="section" style="margin-bottom:0">
       <div class="section-title">出場評估計算機</div>
@@ -461,7 +393,7 @@ tr:hover td{background:rgba(0,229,160,.03)}
 
   <div class="section">
     <div class="section-title">交易紀錄</div>
-    <div class="table-wrap" id="trades-table-wrap"><table><thead><tr><th>日期</th><th>代碼</th><th>名稱</th><th>方向</th><th>價格</th><th>股數</th><th>系統損益</th><th>永豐成本</th><th>永豐損益%</th><th>備註</th><th></th></tr></thead><tbody><tr><td style="color:var(--text2)">2026-05-20</td><td style="color:var(--accent2)">0056</td><td>元大高股息</td><td><span class="badge badge-green">買進</span></td><td>44.1</td><td>200</td><td>—</td><td><span style="color:var(--text3)">—</span></td><td><span style="color:var(--text3)">—</span></td><td style="color:var(--text2);font-size:11px">$8,832</td><td><button class="btn btn-danger" onclick="deleteTrade(1779270717327)">✕</button></td></tr><tr><td style="color:var(--text2)">2026-05-19</td><td style="color:var(--accent2)">0056</td><td>元大高股息</td><td><span class="badge badge-green">買進</span></td><td>44.7</td><td>200</td><td>—</td><td><span style="color:var(--text3)">—</span></td><td><span style="color:var(--text3)">—</span></td><td style="color:var(--text2);font-size:11px">$8,952</td><td><button class="btn btn-danger" onclick="deleteTrade(1779161547068)">✕</button></td></tr><tr><td style="color:var(--text2)">2026-05-19</td><td style="color:var(--accent2)">0056</td><td>元大高股息</td><td><span class="badge badge-green">買進</span></td><td>44.9</td><td>200</td><td>—</td><td><span style="color:var(--text3)">—</span></td><td><span style="color:var(--text3)">—</span></td><td style="color:var(--text2);font-size:11px">$8,992</td><td><button class="btn btn-danger" onclick="deleteTrade(1779154933726)">✕</button></td></tr><tr><td style="color:var(--text2)">2026-05-15</td><td style="color:var(--accent2)">2887</td><td>台新新光金</td><td><span class="badge badge-green">買進</span></td><td>23.8</td><td>300</td><td>—</td><td><span style="color:var(--text3)">—</span></td><td><span style="color:var(--text3)">—</span></td><td style="color:var(--text2);font-size:11px">$7,150</td><td><button class="btn btn-danger" onclick="deleteTrade(1778993626063)">✕</button></td></tr><tr><td style="color:var(--text2)">2026-05-15</td><td style="color:var(--accent2)">2887</td><td>台新新光金</td><td><span class="badge badge-green">買進</span></td><td>23.75</td><td>300</td><td>—</td><td><span style="color:var(--text3)">—</span></td><td><span style="color:var(--text3)">—</span></td><td style="color:var(--text2);font-size:11px">$7,135</td><td><button class="btn btn-danger" onclick="deleteTrade(1778993601265)">✕</button></td></tr><tr><td style="color:var(--text2)">2026-05-14</td><td style="color:var(--accent2)">2887</td><td>台新新光金</td><td><span class="badge badge-green">買進</span></td><td>23.2</td><td>200</td><td>—</td><td><span style="color:var(--text3)">—</span></td><td><span style="color:var(--text3)">—</span></td><td style="color:var(--text2);font-size:11px">$4,646</td><td><button class="btn btn-danger" onclick="deleteTrade(1778993564138)">✕</button></td></tr></tbody></table></div>
+    <div class="table-wrap" id="trades-table-wrap"><div class="loading">載入中...</div></div>
   </div>
 </div>
 
@@ -483,7 +415,7 @@ tr:hover td{background:rgba(0,229,160,.03)}
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="toast err" id="toast">⚠ 無法連線到 Google Sheets</div>
 <div class="confirm-overlay" id="confirm-overlay">
   <div class="confirm-box">
     <div class="confirm-title">確認刪除</div>
@@ -1268,7 +1200,7 @@ function removeSellRow(code, idx) {
 }
 
 function analyzeSellSignals(code, buyBrokers, sellEntries) {
-  if (!sellEntries || sellEntries.length === 0) return '';
+  if (!sellEntries || sellEntries.length === 0) return [];
   const signals = [];
   const sellBrokers = [...new Set(sellEntries.filter(s=>s.broker).map(s=>s.broker))];
   const buySet = new Set(buyBrokers);
@@ -1306,7 +1238,7 @@ function analyzeSellSignals(code, buyBrokers, sellEntries) {
   if (signals.length === 0 && sellBrokers.length > 0) {
     signals.push({ color:'var(--text2)', icon:'ℹ️', text:'非主力四大券商賣超，影響相對有限，持續觀察。' });
   }
-  return signals;
+  return signals; // 永遠回傳陣列
 }
 
 async function saveCust(code,field,val){
